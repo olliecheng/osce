@@ -1,4 +1,4 @@
-import { CODE_RE, normalizeCode } from "../../../worker/protocol";
+import { normalizeCode } from "../../../worker/protocol";
 import { bell, primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
 import { esc, md } from "../markdown";
@@ -184,11 +184,6 @@ export function mountHost(onJoin: (code: string) => void) {
   $("joinForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const code = normalizeCode($<HTMLInputElement>("joinCode").value);
-    if (!CODE_RE.test(code)) {
-      $("joinBoxErr").textContent = "Enter the 4-letter code (letters only, no I or O).";
-      return;
-    }
-    $("joinBoxErr").textContent = "";
     onJoin(code);
   });
 

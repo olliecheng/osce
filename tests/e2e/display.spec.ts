@@ -234,9 +234,16 @@ test("join box: unknown code goes to the waiting room; Leave returns home; later
   const d = await newPage(browser);
   await d.page.goto("/");
   await expect(d.page.locator("#joinTitle")).toHaveText("Join a room");
+  // greyed out and inert until 4 letters are typed
+  const go = d.page.locator("#joinGo");
+  await expect(go).toHaveCSS("pointer-events", "none");
   await d.page.locator("#joinCode").fill("ab1");
-  await d.page.locator("#joinGo").click();
-  await expect(d.page.locator("#joinBoxErr")).toContainText("4-letter code");
+  await expect(go).toHaveCSS("pointer-events", "none");
+  await d.page.locator("#joinCode").press("Enter");
+  await expect(d.page.locator("#lobbyMsg")).toHaveCount(0);
+  await d.page.locator("#joinCode").fill("abcd");
+  await expect(go).toHaveCSS("pointer-events", "auto");
+  await d.page.locator("#joinCode").fill("");
   await d.page.locator("#joinCode").fill("zzzy");
   await d.page.locator("#joinGo").click();
   await expect(d.page.locator("#lobbyMsg")).toHaveText("No host found.");

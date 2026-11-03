@@ -25,10 +25,9 @@
     <section class="drop join-box" id="joinBox" aria-labelledby="joinTitle">
       <form class="join-line" id="joinForm">
         <h2 id="joinTitle">Join a room</h2>
-        <input class="code-input" id="joinCode" maxlength="8" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="ABCD" aria-label="4-letter room code">
+        <input class="code-input" id="joinCode" maxlength="4" minlength="4" required pattern="[A-HJ-NP-Za-hj-np-z]{4}" title="4 letters (no I or O)" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="ABCD" aria-label="4-letter room code">
         <button class="btn primary" id="joinGo" type="submit" aria-label="Join" title="Join">→</button>
       </form>
-      <p class="status err" id="joinBoxErr" role="alert"></p>
     </section>
     <section class="drop" id="drop" aria-labelledby="loadTitle">
       <h2 id="loadTitle">Load a case</h2>

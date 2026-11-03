@@ -994,3 +994,6 @@ body.in-station .show-timer{color:var(--muted)}
 .dcol{display:grid;gap:10px;width:fit-content;max-width:100%}
 .leave-btn{justify-self:end;appearance:none;background:transparent;border:2px solid transparent;color:var(--red);font:inherit;font-weight:600;padding:6px 12px;cursor:pointer}
 .leave-btn:hover{background:var(--red-soft);border-color:var(--red)}
+
+/* The Join button stays grey and inert until the code field holds 4 valid letters (native validation). */
+.join-line:has(.code-input:invalid) .btn{opacity:.45;cursor:not-allowed;pointer-events:none}

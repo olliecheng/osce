@@ -35,9 +35,7 @@ test("host page: header, room code, join box, help button, reset case", async ({
   await expect(page.locator("#planTitle")).toHaveText("No case loaded");
 
   // join box
-  await page.locator("#joinCode").fill("ab1");
-  await page.locator("#joinGo").click();
-  await expect(page.locator("#joinBoxErr")).toContainText("4-letter code");
+  await expect(page.locator("#joinGo")).toHaveCSS("pointer-events", "none");
   await page.locator("#joinCode").fill("abcd");
   await page.locator("#joinGo").click();
   await expect(page).toHaveURL(/\/$/); // no separate /join path
