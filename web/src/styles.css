@@ -940,7 +940,7 @@ a.btn {
 
 
 /* ---------- University-style theme: squares, solid edges, navy ---------- */
-header.top{background:var(--head-bg);color:var(--head-ink);border-bottom:4px solid var(--primary)}
+header.top{background:var(--head-bg);color:var(--head-ink);border-bottom:4px solid #8a63d2}
 .brand{margin-right:auto;font-weight:700;letter-spacing:0;font-size:1.35rem;color:var(--head-ink)}
 header.top .btn{background:transparent;color:var(--head-ink);border-color:var(--head-ink)}
 header.top .btn:hover{background:rgba(255,255,255,.14)}
@@ -997,3 +997,10 @@ body.in-station .show-timer{color:var(--muted)}
 
 /* The Join button stays grey and inert until the code field holds 4 valid letters (native validation). */
 .join-line:has(.code-input:invalid) .btn{opacity:.45;cursor:not-allowed;pointer-events:none}
+
+/* navbar: everything vertically centred; the room code shares its baseline with the "Room" label */
+header.top .wrap{align-items:center}
+header.top .btn,header.top .brand,header.top .room-chip,header.top .show-timer{line-height:1.2}
+header.top .btn{padding-top:8px;padding-bottom:8px}
+.room-chip{display:flex;align-items:baseline;gap:8px;margin:0}
+.room-chip .c{font-size:1rem;letter-spacing:.2em;line-height:1.2}
