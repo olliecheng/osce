@@ -951,7 +951,7 @@ header.top{background:var(--head-bg);color:var(--head-ink);border-bottom:4px sol
 header.top .btn{background:transparent;color:var(--head-ink);border-color:var(--head-ink)}
 header.top .btn:hover{background:rgba(255,255,255,.14)}
 header.top .btn.quiet{border-color:transparent}
-header.top .room-chip{color:var(--head-ink);opacity:.9}
+header.top .room-chip{color:var(--head-ink)}
 header.top .room-chip .c{color:var(--head-ink);opacity:1}
 .btn{font-weight:600;border-color:var(--edge)}
 .btn:hover{background:var(--bg)}
@@ -1008,5 +1008,15 @@ body.in-station .show-timer{color:var(--muted)}
 header.top .wrap{align-items:center}
 header.top .btn,header.top .brand,header.top .room-chip,header.top .show-timer{line-height:1.2}
 header.top .btn{padding-top:8px;padding-bottom:8px}
-.room-chip{display:flex;align-items:baseline;gap:8px;margin:0}
+.room-chip{display:flex;align-items:baseline;gap:4px;margin:0}
 .room-chip .c{font-size:1rem;letter-spacing:.2em;line-height:1.2}
+
+/* Test bell: icon + label; right-aligned on phones */
+#bellTest{display:inline-flex;align-items:center;gap:4px;font-weight:400;font-size:.9rem}
+#bellTest svg{display:block;flex:none;transform:translateY(-2px)}
+@media (max-width:700px){
+  #bellTest{margin-left:auto}
+  header.top .wrap{row-gap:0;padding-top:6px;padding-bottom:2px}
+  header.top .btn{padding-top:2px;padding-bottom:2px}
+  .show-timer{margin-left:0}
+}
