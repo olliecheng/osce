@@ -981,3 +981,9 @@ header.top .room-chip .c{color:var(--head-ink);opacity:1}
 .drop form.row{align-items:center}
 .icon-btn{margin-left:auto;display:inline-grid;place-items:center;padding:10px}
 .icon-btn:hover:not([disabled]){background:var(--red-soft);color:var(--red);border-color:var(--red)}
+
+/* During a station the header blends into the page so it never competes with the content. */
+body.in-station header.top{background:var(--bg);color:var(--muted);border-bottom-color:transparent}
+body.in-station .brand,body.in-station header.top .room-chip,body.in-station header.top .room-chip .c{color:var(--muted)}
+body.in-station header.top .btn{color:var(--muted);border-color:transparent}
+body.in-station header.top .btn:hover{background:var(--line)}

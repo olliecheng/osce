@@ -127,6 +127,7 @@ export function mountDisplay() {
     timer.reset();
     clock.classList.add("hidden");
     clock.classList.remove("reveal");
+    document.body.classList.remove("in-station");
   }
   function center(...children: HTMLElement[]) {
     const card = h("div", "card");
@@ -211,6 +212,7 @@ export function mountDisplay() {
   function showRunning(s: DisplaySnapshot) {
     black.classList.add("hidden");
     clock.classList.remove("hidden");
+    document.body.classList.add("in-station");
     const wrap = h("div", "");
     if (!s.timerOnly && s.stem) {
       const box = h("div", "stem-box reading-big");

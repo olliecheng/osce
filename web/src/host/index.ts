@@ -297,6 +297,7 @@ export function mountHost() {
     keepAwake(true);
     els.setup.classList.add("hidden");
     els.run.classList.remove("hidden");
+    document.body.classList.add("in-station");
     timer.start(bare);
     clearInterval(tickId);
     tickId = setInterval(() => timer.tick(), 200);
@@ -331,6 +332,7 @@ export function mountHost() {
     els.skipBtn.classList.remove("hidden");
     els.resetBtn.textContent = "End station";
     els.run.classList.add("hidden");
+    document.body.classList.remove("in-station");
     els.setup.classList.remove("hidden");
     setPhaseColor("teal");
     document.title = "OSCE history station";
