@@ -1024,10 +1024,11 @@ header.top .btn{padding-top:8px;padding-bottom:8px}
 .room-chip{display:flex;align-items:baseline;gap:4px;margin:0}
 .room-chip .c{font-size:1rem;letter-spacing:.2em;line-height:1.2}
 .room-chip.can-refresh .c{cursor:pointer}
-.room-chip.can-refresh .c::after{content:"\21BB";display:inline-block;width:0;overflow:visible;margin-left:.45em;font-size:1.5em;font-weight:400;line-height:1;letter-spacing:0;vertical-align:-.1em;color:inherit;opacity:0;transition:opacity .15s}
+.room-chip.can-refresh .c::after{content:"\21BB";display:inline-block;width:0;overflow:visible;margin-left:0;font-size:1.5em;font-weight:400;line-height:1;letter-spacing:0;vertical-align:.12em;color:inherit;opacity:0;transition:opacity .15s}
 .room-chip.can-refresh .c:hover::after,.room-chip.can-refresh .c:focus-visible::after{opacity:1}
-.room-chip{flex-wrap:wrap}
-.room-chip #chipNote{flex-basis:100%}
+.room-chip{position:relative}
+/* The note hangs below the chip without taking part in layout, so nothing shifts when it appears. */
+.room-chip #chipNote{position:absolute;top:100%;left:0;white-space:nowrap;font-size:.8rem}
 .room-chip #chipNote:empty{display:none}
 
 /* Test bell: icon + label; right-aligned on phones */

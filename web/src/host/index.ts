@@ -253,7 +253,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     roomChip.classList.remove("hidden");
     roomChip.classList.add("can-refresh"); // clicking the code makes a new room (host view only)
     $("chipCode").textContent = u.code ?? "—";
-    $("chipNote").textContent = u.code && !u.connected ? "· reconnecting" : u.notice;
+    $("chipNote").textContent = u.code && !u.connected ? "Reconnecting…" : u.notice;
     $("roomRetry").classList.toggle("hidden", !!u.code || !u.notice);
   }
   $("roomRetry").addEventListener("click", () => room.create());
