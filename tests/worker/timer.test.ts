@@ -56,6 +56,11 @@ describe("Timer", () => {
     expect(log).toEqual(["phase:history"]);
     expect(timer.warned).toBe(true);
   });
+  it("seed into an already-expired phase does not ring end", () => {
+    const { timer, log } = setup();
+    timer.seed(1, 0, false, false);
+    expect(log.some((e) => e.startsWith("end"))).toBe(false);
+  });
   it("fmt rounds up to whole seconds", () => {
     expect(fmt(60_000)).toBe("1:00");
     expect(fmt(59_001)).toBe("1:00");
