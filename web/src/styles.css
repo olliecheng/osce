@@ -957,6 +957,7 @@ header.top{background:var(--head-bg);color:var(--head-ink);border-bottom:4px sol
 .brand{margin-right:auto;font-weight:700;letter-spacing:0;font-size:1.35rem;color:var(--head-ink)}
 header.top .btn{background:transparent;color:var(--head-ink);border-color:var(--head-ink)}
 header.top .btn:hover{background:rgba(255,255,255,.14)}
+header.top .btn.quiet:hover{color:var(--head-ink)}
 header.top .btn.quiet{border-color:transparent}
 header.top .room-chip{color:var(--head-ink)}
 header.top .room-chip .c{color:var(--head-ink);opacity:1}
@@ -986,6 +987,7 @@ body.in-station header.top{background:var(--bg);color:var(--muted);border-bottom
 body.in-station .brand,body.in-station header.top .room-chip,body.in-station header.top .room-chip .c{color:var(--muted)}
 body.in-station header.top .btn{color:var(--muted);border-color:transparent}
 body.in-station header.top .btn:hover{background:var(--line)}
+body.in-station header.top .btn.quiet:hover{color:var(--ink)}
 
 .dclock.no-timer .time,.dclock.no-timer .bar{display:none}
 .dclock .wrap{padding-top:16px;padding-bottom:16px}
@@ -995,6 +997,7 @@ body.in-station .show-timer{color:var(--muted)}
 .show-timer+.room-chip{margin-left:0}
 
 /* compact one-row join box */
+.drop,.plan{padding:20px}
 .join-box{padding:14px 20px;gap:4px;justify-items:stretch}
 .join-line{display:flex;align-items:stretch;gap:10px;width:100%}
 .join-line h2{margin-right:auto;align-self:center}
