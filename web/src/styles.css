@@ -1023,8 +1023,8 @@ header.top .btn,header.top .brand,header.top .room-chip,header.top .show-timer{l
 header.top .btn{padding-top:8px;padding-bottom:8px}
 .room-chip{display:flex;align-items:baseline;gap:4px;margin:0}
 .room-chip .c{font-size:1rem;letter-spacing:.2em;line-height:1.2}
-.room-chip.can-refresh .c{cursor:pointer}
-.room-chip.can-refresh .c::after{content:"\21BB";display:inline-block;width:0;overflow:visible;margin-left:0;font-size:1.5em;font-weight:400;line-height:1;letter-spacing:0;vertical-align:.12em;color:inherit;opacity:0;transition:opacity .15s}
+.room-chip.can-refresh .c{cursor:pointer;position:relative}
+.room-chip.can-refresh .c::after{content:"\21BB";position:absolute;left:100%;top:50%;transform:translateY(-58%);font-size:1.5em;font-weight:400;line-height:1;letter-spacing:0;color:inherit;opacity:0;transition:opacity .15s;pointer-events:none}
 .room-chip.can-refresh .c:hover::after,.room-chip.can-refresh .c:focus-visible::after{opacity:1}
 .room-chip{position:relative}
 /* The note hangs below the chip without taking part in layout, so nothing shifts when it appears. */
@@ -1041,3 +1041,6 @@ header.top .btn{padding-top:8px;padding-bottom:8px}
   header.top .btn{padding-top:2px;padding-bottom:2px}
   .show-timer{margin-left:0}
 }
+
+/* The navbar is chrome, not content: no text selection. */
+header.top{-webkit-user-select:none;user-select:none}
