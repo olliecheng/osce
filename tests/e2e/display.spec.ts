@@ -42,7 +42,7 @@ test("host + display: lobby join, stem only, synced timer, pause, skip, finish, 
   await expect(disp.locator(".stem-box.reading-big")).toContainText(EXAMPLE_INTRO);
   await host.locator("#skipBtn").click();
   await expect(disp.locator("#dPhaseName")).toHaveText("History taking");
-  await expect(disp.locator(".stem-box.reading-big")).toContainText(EXAMPLE_INTRO);
+  await expect(disp.locator(".stem-box")).toHaveCount(0);
   await expect(disp.locator(".case")).toHaveCount(0);
   await host.locator("#skipBtn").click();
   await expect(disp.locator("#dPhaseName")).toHaveText("Examiner question");
@@ -189,47 +189,41 @@ test("timer-only session shows a blank display with the hidden timer", async ({ 
   await d.ctx.close();
 });
 
-test("display timer band is hidden until hover or focus", async ({ browser }) => {
+test("display: phase band always shown; timer and bar only with Show timer; stem hidden during history", async ({
+  browser,
+}) => {
   const h = await newPage(browser);
   const d = await newPage(browser);
   await openHost(h.page);
   const code = await createRoom(h.page);
+  await expect(d.page.locator("#showTimerWrap")).toBeHidden();
   await joinDisplay(d.page, code);
   await expect(d.page.locator("#lobbyMsg")).toBeVisible();
+  await expect(d.page.locator("#showTimerWrap")).toBeVisible();
   await startStation(h.page);
-  const band = d.page.locator("#dClock");
-  await expect(band).toBeVisible();
-  const opacity = () => band.evaluate((el) => getComputedStyle(el).opacity);
-  expect(await opacity()).toBe("0");
-  const box = (await band.boundingBox()) as { x: number; y: number; width: number; height: number };
-  expect(box.height).toBeGreaterThan(40); // the hidden band still occupies layout space
-  await d.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-  await expect.poll(opacity).toBe("1");
-  await d.page.mouse.move(box.x + box.width / 2, box.y + box.height + 200);
-  await expect.poll(opacity).toBe("0");
-  await band.focus();
-  await expect.poll(opacity).toBe("1");
-  await h.ctx.close();
-  await d.ctx.close();
-});
 
-test("touch: tapping the strip reveals the band for 3 s", async ({ browser }) => {
-  const h = await newPage(browser);
-  const d = await newPage(browser, { touch: true });
-  await openHost(h.page);
-  const code = await createRoom(h.page);
-  await joinDisplay(d.page, code);
-  await expect(d.page.locator("#lobbyMsg")).toBeVisible();
-  await startStation(h.page);
-  const band = d.page.locator("#dClock");
-  await expect(band).toBeVisible();
-  const opacity = () => band.evaluate((el) => getComputedStyle(el).opacity);
-  expect(await opacity()).toBe("0");
-  await band.tap();
-  await expect.poll(opacity).toBe("1");
-  await d.page.waitForTimeout(2000);
-  expect(await opacity()).toBe("1");
-  await expect.poll(opacity, { timeout: 3000 }).toBe("0");
+  await expect(d.page.locator("#dPhaseName")).toBeVisible();
+  await expect(d.page.locator("#dPhaseName")).toHaveText("Reading time");
+  await expect(d.page.locator("#dTime")).toBeHidden();
+  await expect(d.page.locator("#dBarFill")).toBeHidden();
+  await expect(d.page.locator(".stem-box")).toContainText(EXAMPLE_INTRO);
+
+  await d.page.getByLabel("Show timer").check();
+  await expect(d.page.locator("#dTime")).toBeVisible();
+  await expect(d.page.locator("#dBarFill")).toBeVisible();
+  await d.page.getByLabel("Show timer").uncheck();
+  await expect(d.page.locator("#dTime")).toBeHidden();
+
+  // history: phase still shown, instructions are not
+  await h.page.locator("#skipBtn").click();
+  await expect(d.page.locator("#dPhaseName")).toHaveText("History taking");
+  await expect(d.page.locator(".stem-box")).toHaveCount(0);
+  expect(await d.page.content()).not.toContain("Candidate instructions</p>");
+
+  // question: instructions return
+  await h.page.locator("#skipBtn").click();
+  await expect(d.page.locator("#dPhaseName")).toHaveText("Examiner question");
+  await expect(d.page.locator(".stem-box")).toContainText(EXAMPLE_INTRO);
   await h.ctx.close();
   await d.ctx.close();
 });

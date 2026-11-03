@@ -926,15 +926,6 @@ a.btn {
   font-size: 0.85rem;
   padding: 7px 12px;
 }
-.dclock {
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.dclock:hover,
-.dclock:focus-within,
-.dclock.reveal {
-  opacity: 1;
-}
 .dclock .wrap {
   grid-template-columns: auto 1fr;
 }
@@ -943,11 +934,6 @@ a.btn {
   inset: 0;
   z-index: 20;
   background: #000;
-}
-@media (prefers-reduced-motion: reduce) {
-  .dclock {
-    transition: none;
-  }
 }
 
 .room-chip .c{font-size:1.15rem}
@@ -987,3 +973,10 @@ body.in-station header.top{background:var(--bg);color:var(--muted);border-bottom
 body.in-station .brand,body.in-station header.top .room-chip,body.in-station header.top .room-chip .c{color:var(--muted)}
 body.in-station header.top .btn{color:var(--muted);border-color:transparent}
 body.in-station header.top .btn:hover{background:var(--line)}
+
+.dclock.no-timer .time,.dclock.no-timer .bar{display:none}
+.dclock .wrap{padding-top:16px;padding-bottom:16px}
+.show-timer{display:inline-flex;gap:8px;align-items:center;font-weight:600;cursor:pointer;margin-left:auto}
+.show-timer input{width:1.1rem;height:1.1rem;accent-color:var(--primary)}
+body.in-station .show-timer{color:var(--muted)}
+.show-timer+.room-chip{margin-left:0}

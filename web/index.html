@@ -11,6 +11,7 @@
 <header class="top">
   <div class="wrap">
     <div class="brand">OSCE Simulation Platform</div>
+    <label class="show-timer hidden" id="showTimerWrap"><input type="checkbox" id="showTimer"> Show timer</label>
     <div class="room-chip hidden" id="roomChip" aria-live="polite"><span>Room</span><span class="c" id="chipCode"></span><span id="chipNote"></span><button class="btn quiet hidden" id="roomRetry" type="button">Retry</button></div>
     <button class="btn quiet" id="bellTest" type="button">Test bell</button>
   </div>
@@ -128,12 +129,11 @@
 <!-- DISPLAY (/join) -->
 <div id="displayApp" class="hidden">
   <div class="dview">
-    <div class="clock dclock hidden" id="dClock" tabindex="0" aria-label="Timer">
+    <div class="clock dclock no-timer hidden" id="dClock">
       <div class="wrap">
         <div class="time" id="dTime" aria-live="off">1:00</div>
         <div>
           <div class="phase-name" id="dPhaseName"></div>
-          <div class="phase-next" id="dPhaseNext"></div>
         </div>
         <div class="bar"><span id="dBarFill"></span></div>
       </div>

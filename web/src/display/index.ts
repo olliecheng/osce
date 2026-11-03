@@ -87,24 +87,26 @@ export function mountDisplay() {
   });
   timer.on("phase", ({ phase }) => {
     $("dPhaseName").textContent = phase.name;
-    $("dPhaseNext").textContent = phase.next;
     setPhaseColor(phase.color);
+    renderStem(phase.id);
   });
   timer.on("finish", () => {
     // Normally the host's "done" snapshot arrives within milliseconds; only act alone if it can't.
     if (!hostConnected) showDone();
   });
 
-  // Hover (or focus) reveals the band via CSS. On touch, a tap reveals it for 3 s.
-  let revealTimer: ReturnType<typeof setTimeout> | undefined;
-  clock.addEventListener("pointerdown", () => {
-    if (!matchMedia("(hover: none)").matches) return;
-    clock.classList.add("reveal");
-    clearTimeout(revealTimer);
-    revealTimer = setTimeout(() => {
-      clock.classList.remove("reveal");
-      clock.blur(); // a tap focuses the strip; drop focus so :focus-within lets go too
-    }, 3000);
+  // The phase name is always shown. The countdown and progress bar only appear with "Show timer".
+  const showTimer = $<HTMLInputElement>("showTimer");
+  try {
+    showTimer.checked = localStorage.getItem("osce-show-timer") === "1";
+  } catch {}
+  const applyShowTimer = () => clock.classList.toggle("no-timer", !showTimer.checked);
+  applyShowTimer();
+  showTimer.addEventListener("change", () => {
+    applyShowTimer();
+    try {
+      localStorage.setItem("osce-show-timer", showTimer.checked ? "1" : "0");
+    } catch {}
   });
 
   /* ---------- views ---------- */
@@ -126,7 +128,6 @@ export function mountDisplay() {
     tickId = undefined;
     timer.reset();
     clock.classList.add("hidden");
-    clock.classList.remove("reveal");
     document.body.classList.remove("in-station");
   }
   function center(...children: HTMLElement[]) {
@@ -145,6 +146,7 @@ export function mountDisplay() {
     enableSound.classList.add("hidden");
     joined = false;
     $("roomChip").classList.add("hidden");
+    $("showTimerWrap").classList.add("hidden");
     linkLost = false;
     updateBanner();
     document.title = TITLE;
@@ -209,26 +211,33 @@ export function mountDisplay() {
     center(h("p", "dmsg", "Station finished. Waiting for the next one."));
   }
 
-  function showRunning(s: DisplaySnapshot) {
-    black.classList.add("hidden");
-    clock.classList.remove("hidden");
-    document.body.classList.add("in-station");
+  let snap: DisplaySnapshot | null = null;
+
+  /** The stem is shown in reading and question time, never during history taking. */
+  function renderStem(phaseId: string) {
     const wrap = h("div", "");
-    if (!s.timerOnly && s.stem) {
+    if (snap && !snap.timerOnly && snap.stem && phaseId !== "history") {
       const box = h("div", "stem-box reading-big");
-      box.append(h("p", "lbl", "Candidate instructions"), h("p", "s", s.stem));
+      box.append(h("p", "lbl", "Candidate instructions"), h("p", "s", snap.stem));
       wrap.append(box);
     }
     stage.replaceChildren(wrap);
   }
 
+  function showRunning() {
+    black.classList.add("hidden");
+    clock.classList.remove("hidden");
+    document.body.classList.add("in-station");
+  }
+
   /* ---------- snapshots ---------- */
   function apply(s: DisplaySnapshot) {
     sessionId = s.sessionId;
+    snap = s;
     const idx = PHASES.findIndex((p) => p.id === s.phase);
     if (s.status === "running" && idx >= 0 && s.remainingMs !== null) {
       const wasRunning = timer.running;
-      if (!wasRunning) showRunning(s);
+      if (!wasRunning) showRunning();
       timer.seed(idx, s.remainingMs, s.paused, s.timerOnly);
       if (!tickId) tickId = setInterval(() => timer.tick(), 200);
     } else if (s.phase === "ready") {
@@ -291,6 +300,7 @@ export function mountDisplay() {
         joined = true;
         $("chipCode").textContent = m.code;
         $("roomChip").classList.remove("hidden");
+        $("showTimerWrap").classList.remove("hidden");
         hostConnected = m.hostConnected;
         updateBanner();
         showLobby();
