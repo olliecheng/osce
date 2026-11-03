@@ -13,8 +13,9 @@ export type HostView = {
 };
 
 /**
- * Explicit allow-list: every key is written out by hand. The case is only ever read for
- * `title` and `intro`; the question, answer and sections are never referenced here.
+ * Explicit allow-list: every key is written out by hand. While a station is running the case is
+ * only read for `title` and `intro`. The question, answer and sections are read ONLY when
+ * `phase === "done"` (the station is over), and sanitizeSnapshot re-enforces that rule.
  */
 export function buildSnapshot(v: HostView): DisplaySnapshot {
   const hasCase = !v.timerOnly && v.case !== null;
@@ -28,7 +29,16 @@ export function buildSnapshot(v: HostView): DisplaySnapshot {
     timerOnly: v.timerOnly,
     title: hasCase ? v.case?.title || null : null,
     stem: hasCase ? v.case?.intro || null : null,
+    review: hasCase && v.phase === "done" ? buildReview(v.case as CaseData) : null,
   });
   if (!out) throw new Error("invalid snapshot");
   return out;
+}
+
+function buildReview(c: CaseData) {
+  return {
+    question: c.question || null,
+    answer: c.answer || null,
+    sections: c.sections.map((s) => ({ title: s.title, md: s.md })),
+  };
 }

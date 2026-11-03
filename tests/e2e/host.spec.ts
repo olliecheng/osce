@@ -128,12 +128,15 @@ test("show case button during question time (and on finish) renders the sections
   await expect(page.getByRole("button", { name: "Show case", exact: true })).toHaveCount(0);
 
   await page.locator("#skipBtn").click();
-  await expect(page.getByRole("button", { name: "Show case sections" })).toBeVisible();
-  await page.getByRole("button", { name: "Show case sections" }).click();
-  await expect(page.locator("#reviewArea .case")).toBeVisible();
+  // finished: question, model answer and case sections all shown, no buttons
+  await expect(page.locator(".done-box .question-big")).toBeVisible();
+  await expect(page.locator(".done-box .answer")).toBeVisible();
+  await expect(page.locator(".done-box .case")).toBeVisible();
+  await expect(page.getByRole("button", { name: /again|Show case sections/ })).toHaveCount(0);
 
   // a new station resets the button
-  await page.getByRole("button", { name: "Run this case again" }).click();
+  await page.locator("#resetBtn").click();
+  await page.locator("#startBtn").click();
   await page.locator("#readyGo").click();
   await page.locator("#skipBtn").click();
   await page.locator("#skipBtn").click();
@@ -199,9 +202,8 @@ test("no-room regression: paste, file, example, ready screen, timer only, two-cl
   await page.locator("#timerOnlyBtn").click();
   await page.locator("#readyGo").click();
   for (let i = 0; i < 3; i++) await page.locator("#skipBtn").click();
-  await page.getByRole("button", { name: "Run timer again" }).click();
-  await expect(page.locator("#ready")).toBeVisible();
-  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Run timer again" })).toHaveCount(0);
+  await page.locator("#resetBtn").click();
 
   // help dialog
   await page.getByRole("button", { name: /How to write a case/ }).click();

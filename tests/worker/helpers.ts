@@ -16,6 +16,7 @@ export const snap = (over: Partial<DisplaySnapshot> = {}): DisplaySnapshot => ({
   timerOnly: false,
   title: "T",
   stem: "Stem",
+  review: null,
   ...over,
 });
 

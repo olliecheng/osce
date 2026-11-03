@@ -3,7 +3,18 @@ import { parseCase } from "../../web/src/case";
 import { TEMPLATE } from "../../web/src/host/content";
 import { buildSnapshot } from "../../web/src/snapshot";
 
-const KEYS = ["paused", "phase", "remainingMs", "seq", "sessionId", "status", "stem", "timerOnly", "title"];
+const KEYS = [
+  "paused",
+  "phase",
+  "remainingMs",
+  "review",
+  "seq",
+  "sessionId",
+  "status",
+  "stem",
+  "timerOnly",
+  "title",
+];
 const c = parseCase(TEMPLATE, "x.md");
 
 describe("buildSnapshot privacy allow-list", () => {
@@ -25,6 +36,14 @@ describe("buildSnapshot privacy allow-list", () => {
     expect(json).not.toContain(c?.question as string);
     expect(json).not.toContain("acute coronary syndrome");
     expect(json).not.toContain("Peter Walsh, 62, retired electrician");
+  });
+  it("includes the review only once the station is done", () => {
+    const base = { seq: 1, sessionId: "a", status: "lobby", remainingMs: null, paused: false } as const;
+    const done = buildSnapshot({ ...base, phase: "done", timerOnly: false, case: c });
+    expect(done.review?.question).toBe(c?.question);
+    expect(done.review?.sections.length).toBe(c?.sections.length);
+    expect(buildSnapshot({ ...base, phase: "done", timerOnly: true, case: c }).review).toBeNull();
+    expect(buildSnapshot({ ...base, phase: "question", timerOnly: false, case: c }).review).toBeNull();
   });
   it("sends no stem in timer-only mode or without a case", () => {
     const base = {

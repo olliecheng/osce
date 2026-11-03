@@ -80,16 +80,24 @@ test("host + display: lobby join, stem only, synced timer, pause, skip, finish, 
 
   // finish -> lobby, display still joined
   await host.locator("#skipBtn").click();
-  await expect(disp.getByText("Station finished. Waiting for the next one.")).toBeVisible();
+  // the finished display mirrors the examiner: question, model answer, then the case sections
+  await expect(disp.locator(".question-big")).toBeVisible();
+  await expect(disp.locator(".answer")).toBeVisible();
+  await expect(disp.locator(".case .sec").first()).toBeVisible();
+  await expect(disp.locator(".case")).toContainText("Peter Walsh");
+  await expect(disp.getByRole("button", { name: /again/i })).toHaveCount(0);
 
-  // a late display joining after the finish sees the finished screen
+  // a late display joining after the finish sees the same
   const late2 = await newPage(browser);
   await joinDisplay(late2.page, code);
-  await expect(late2.page.getByText("Station finished. Waiting for the next one.")).toBeVisible();
+  await expect(late2.page.locator(".question-big")).toBeVisible();
+  await expect(late2.page.locator(".case")).toContainText("Peter Walsh");
   await late2.ctx.close();
 
   // a second station works without rejoining
-  await host.getByRole("button", { name: "Run this case again" }).click();
+  await expect(host.getByRole("button", { name: /again/i })).toHaveCount(0);
+  await host.locator("#resetBtn").click();
+  await host.locator("#startBtn").click();
   await expect(disp.locator("#dBlack")).toBeVisible();
   await host.locator("#readyGo").click();
   await expect(disp.locator("#dPhaseName")).toHaveText("Reading time");

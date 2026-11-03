@@ -242,8 +242,7 @@ export function mountHost(onJoin: (code: string) => void) {
         paused: timer.paused,
       };
     }
-    if (timer.finished)
-      return { ...base, case: null, status: "lobby", phase: "done", remainingMs: null, paused: false };
+    if (timer.finished) return { ...base, status: "lobby", phase: "done", remainingMs: null, paused: false };
     return { ...base, case: null, status: "lobby", phase: null, remainingMs: null, paused: false };
   }
   const room = new HostRoom(view, renderRoom);
@@ -442,7 +441,7 @@ export function mountHost(onJoin: (code: string) => void) {
     );
   }
 
-  /** Shared by the question screen and the finished screen: render the case beneath, remove the button. */
+  /** Question screen: render the case beneath the question and remove the button. */
   function wireShowCase(btn: HTMLElement, area: HTMLElement) {
     btn.addEventListener("click", () => {
       area.innerHTML = stemBlock(false) + caseBlock();
@@ -454,15 +453,7 @@ export function mountHost(onJoin: (code: string) => void) {
   function renderStage(id: string) {
     let html = "";
     if (timer.timerOnly) {
-      els.stage.innerHTML =
-        id === "done"
-          ? `<div class="done-box"><div class="actions"><button class="btn primary" type="button" id="againBtn">Run timer again</button></div></div>`
-          : "";
-      if (id === "done")
-        $("againBtn").addEventListener("click", () => {
-          reset();
-          showReady(true);
-        });
+      els.stage.innerHTML = "";
       return;
     }
     if (id === "reading") {
@@ -477,21 +468,11 @@ export function mountHost(onJoin: (code: string) => void) {
         `<div style="margin-top:26px">${answerBlock(false)}</div>` +
         `<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="showCaseBtn">Show case</button></div><div id="caseArea"></div>`;
     } else if (id === "done") {
-      html = `<div class="done-box">${questionBlock()}${answerBlock(true)}
-        <div class="actions"><button class="btn primary" type="button" id="againBtn">Run this case again</button>
-        <button class="btn" type="button" id="reviewBtn">Show case sections</button></div>
-        <div id="reviewArea"></div></div>`;
+      html = `<div class="done-box">${questionBlock()}${answerBlock(true)}${stemBlock(false)}${caseBlock()}</div>`;
     }
     els.stage.innerHTML = html;
     wireIndexLinks(els.stage);
     if (id === "question") wireShowCase($("showCaseBtn"), $("caseArea"));
-    if (id === "done") {
-      $("againBtn").addEventListener("click", () => {
-        reset();
-        showReady(false);
-      });
-      wireShowCase($("reviewBtn"), $("reviewArea"));
-    }
   }
 
   /* ---------- help dialog ---------- */
