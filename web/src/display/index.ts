@@ -1,5 +1,5 @@
 import { type DisplaySnapshot, parseServerMsg, type ServerMsg } from "../../../worker/protocol";
-import { bindSmoothBar, fillBar } from "../bar";
+import { bindSmoothBar, fillBar, flashClock } from "../bar";
 import { audioRunning, bell, primeAudio, stopKeepAlive, testBell } from "../bell";
 import { applyChecked, indexListItems, sectionIndex } from "../checklist";
 import { downloadCase } from "../download";
@@ -68,6 +68,7 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
     if (rung.has(key)) return;
     rung.add(key);
     bell(kind === "warn" ? 1 : 2);
+    if (kind === "warn") flashClock(clock);
   }
   timer.on("warn", ({ phase }) => ring("warn", phase.id));
   timer.on("end", ({ phase }) => ring("end", phase.id));

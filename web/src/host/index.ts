@@ -1,5 +1,5 @@
 import { normalizeCode } from "../../../worker/protocol";
-import { bindSmoothBar, fillBar } from "../bar";
+import { bindSmoothBar, fillBar, flashClock } from "../bar";
 import { bell, primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
 import { applyChecked, indexListItems, sectionIndex, wireChecklist } from "../checklist";
@@ -283,7 +283,10 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     window.scrollTo({ top: 0 });
     room.requestPush();
   });
-  timer.on("warn", () => bell(1));
+  timer.on("warn", () => {
+    bell(1);
+    flashClock(els.clock);
+  });
   timer.on("end", () => bell(2));
   timer.on("pause", () => {
     els.pauseBtn.textContent = "Resume";

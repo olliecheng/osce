@@ -22,6 +22,14 @@ export function bindSmoothBar(el: HTMLElement, timer: Timer) {
   timer.on("tick", start);
 }
 
+/** Flash the clock band white twice (250 ms on / 250 ms off); see `.clock.flash` in styles.css. */
+export function flashClock(el: HTMLElement) {
+  el.classList.remove("flash");
+  void el.offsetWidth; // restart the animation if it is already running
+  el.classList.add("flash");
+  setTimeout(() => el.classList.remove("flash"), 750);
+}
+
 export function fillBar(el: HTMLElement) {
   el.style.transform = "scaleX(1)";
 }

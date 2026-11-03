@@ -350,17 +350,31 @@ header.top .wrap {
   position: sticky;
   top: env(safe-area-inset-top, 0px);
   z-index: 5;
+  --clock-fg: #fff;
   background: var(--phase);
-  color: #fff;
+  color: var(--clock-fg);
   transition: background 0.4s;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .clock {
-    color: #0d1a18;
+    --clock-fg: #0d1a18;
   }
 }
 :root[data-theme="dark"] .clock {
-  color: #0d1a18;
+  --clock-fg: #0d1a18;
+}
+/* flash: white background, black text for 250 ms, normal for 250 ms; twice */
+.clock.flash {
+  animation: clock-flash 0.75s step-end 1;
+}
+@keyframes clock-flash {
+  0% { background: #fff; color: #000; }
+  33.333% { background: var(--phase); color: var(--clock-fg); }
+  66.667% { background: #fff; color: #000; }
+  100% { background: var(--phase); color: var(--clock-fg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clock.flash { animation: none; }
 }
 .clock .wrap {
   display: grid;
