@@ -44,6 +44,7 @@ export class Timer {
   endAt = 0;
   pausedLeft: number | null = null;
   warned = false;
+  silentEnd = false;
   timerOnly = false;
 
   private handlers: { [K in keyof TimerEvents]?: Handler<K>[] } = {};
@@ -99,6 +100,7 @@ export class Timer {
     this.endAt = this.now() + p.secs * 1000;
     this.pausedLeft = null;
     this.warned = false;
+    this.silentEnd = false;
     this.emit("phase", { index: i, phase: p });
     this.tick();
   }
@@ -140,8 +142,12 @@ export class Timer {
     this.phaseIdx = index;
     this.endAt = this.now() + remainingMs;
     this.pausedLeft = paused ? remainingMs : null;
-    if (changed) this.warned = !!(p.warn && remainingMs <= p.warn * 1000);
-    if (changed) this.emit("phase", { index, phase: p });
+    if (changed) {
+      this.warned = !!(p.warn && remainingMs <= p.warn * 1000);
+      // Joined a phase that has already expired: don't ring an end bell we weren't present for.
+      this.silentEnd = remainingMs <= 0 && !paused;
+      this.emit("phase", { index, phase: p });
+    }
     this.tick();
   }
 
@@ -155,7 +161,7 @@ export class Timer {
       this.emit("warn", { index: this.phaseIdx, phase: p });
     }
     if (this.pausedLeft === null && left <= 0) {
-      this.emit("end", { index: this.phaseIdx, phase: p });
+      if (!this.silentEnd) this.emit("end", { index: this.phaseIdx, phase: p });
       this.enterPhase(this.phaseIdx + 1);
     }
   }
