@@ -1023,6 +1023,9 @@ header.top .btn,header.top .brand,header.top .room-chip,header.top .show-timer{l
 header.top .btn{padding-top:8px;padding-bottom:8px}
 .room-chip{display:flex;align-items:baseline;gap:4px;margin:0}
 .room-chip .c{font-size:1rem;letter-spacing:.2em;line-height:1.2}
+.room-chip.can-refresh .c{cursor:pointer}
+.room-chip.can-refresh .c::after{content:"\21BB";display:inline-block;width:0;overflow:visible;margin-left:.3em;letter-spacing:0;opacity:0;transition:opacity .15s}
+.room-chip.can-refresh .c:hover::after,.room-chip.can-refresh .c:focus-visible::after{opacity:.8}
 
 /* Test bell: icon + label; right-aligned on phones */
 #bellTest{display:inline-flex;align-items:center;gap:4px;font-weight:400;font-size:.9rem}

@@ -101,10 +101,16 @@ export class HostRoom {
     this.onChange();
   }
 
+  /** Close the current room on purpose (displays are told) and start a new one with a fresh code. */
+  refresh() {
+    this.conn?.send({ type: "close" });
+    this.drop();
+  }
+
   /** The current room is unusable: forget it and create a new one. `tookOver` is the room another device took. */
   private drop(tookOver?: string) {
-    if (!this.conn) return; // already dropped (the message and the close event both land here)
-    this.conn.close(); // stop reconnecting
+    if (!this.conn && !this.ui.code) return; // already dropped (the message and the close event both land here)
+    this.conn?.close(); // stop reconnecting
     this.conn = null;
     try {
       sessionStorage.removeItem(KEY);

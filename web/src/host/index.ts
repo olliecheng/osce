@@ -251,11 +251,16 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
   function renderRoom() {
     const u = room.ui;
     roomChip.classList.remove("hidden");
+    roomChip.classList.add("can-refresh"); // clicking the code makes a new room (host view only)
     $("chipCode").textContent = u.code ?? "—";
     $("chipNote").textContent = u.code && !u.connected ? "· reconnecting" : u.notice;
     $("roomRetry").classList.toggle("hidden", !!u.code || !u.notice);
   }
   $("roomRetry").addEventListener("click", () => room.create());
+  const chipCode = $("chipCode");
+  chipCode.addEventListener("click", () => {
+    if (roomChip.classList.contains("can-refresh") && room.active) room.refresh();
+  });
 
   timer.on("tick", ({ leftMs }) => {
     const p = timer.phase;

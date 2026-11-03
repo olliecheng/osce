@@ -325,6 +325,25 @@ test("a viewer can take over as host; the old host becomes a viewer of the same 
   await d.ctx.close();
 });
 
+test("clicking the room code makes a new room; viewers of the old one are told", async ({ browser }) => {
+  const h = await newPage(browser);
+  const d = await newPage(browser);
+  await openHost(h.page);
+  const code = await createRoom(h.page);
+  await joinDisplay(d.page, code);
+  await expect(d.page.locator("#lobbyMsg")).toHaveText(`Joined ${code}. Waiting for the station to start.`);
+  // viewers can't replace the room they joined
+  await d.page.locator("#chipCode").click();
+  await expect(d.page.locator("#chipCode")).toHaveText(code);
+
+  await h.page.locator("#chipCode").click();
+  await expect(h.page.locator("#chipCode")).not.toHaveText(code);
+  await expect(h.page.locator("#chipCode")).toHaveText(/^[A-HJ-NP-Z]{4}$/);
+  await expect(d.page.locator("#lobbyMsg")).toHaveText("No host found.");
+  await h.ctx.close();
+  await d.ctx.close();
+});
+
 test("host refresh reclaims the room and returns displays to the lobby", async ({ browser }) => {
   const h = await newPage(browser);
   const d = await newPage(browser);

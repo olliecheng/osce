@@ -289,6 +289,7 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
     joined = true;
     $("chipCode").textContent = c;
     $("roomChip").classList.remove("hidden");
+    $("roomChip").classList.remove("can-refresh"); // viewers can't replace the room
     $("showTimerWrap").classList.remove("hidden");
     showLobby();
     connect();
