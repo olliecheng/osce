@@ -506,6 +506,10 @@ header.top .wrap {
   cursor: pointer;
   font-weight: 700;
 }
+.answer-title {
+  margin: 0;
+  font-weight: 700;
+}
 .answer .md {
   margin-top: 10px;
 }

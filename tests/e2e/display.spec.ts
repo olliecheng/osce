@@ -46,7 +46,7 @@ test("host + display: lobby join, stem only, synced timer, pause, skip, finish, 
   await expect(disp.locator(".case")).toHaveCount(0);
   await host.locator("#skipBtn").click();
   await expect(disp.locator("#dPhaseName")).toHaveText("Examiner question");
-  await expect(disp.locator(".stem-box.reading-big")).toContainText(EXAMPLE_INTRO);
+  await expect(disp.locator(".stem-box")).toHaveCount(0); // blank during the question
   const html = await disp.content();
   for (const secret of [
     EXAMPLE_QUESTION,
@@ -81,8 +81,11 @@ test("host + display: lobby join, stem only, synced timer, pause, skip, finish, 
   // finish -> lobby, display still joined
   await host.locator("#skipBtn").click();
   // the finished display mirrors the examiner: question, model answer, then the case sections
+  await expect(disp.locator("#dPhaseName")).toHaveText("Station finished");
+  await expect(disp.locator("#dClock")).toBeVisible();
   await expect(disp.locator(".question-big")).toBeVisible();
-  await expect(disp.locator(".answer")).toBeVisible();
+  await expect(disp.locator(".answer-title")).toHaveText("Model answer");
+  await expect(disp.locator("details.answer")).toHaveCount(0);
   await expect(disp.locator(".case .sec").first()).toBeVisible();
   await expect(disp.locator(".case")).toContainText("Peter Walsh");
   await expect(disp.getByRole("button", { name: /again/i })).toHaveCount(0);
@@ -228,10 +231,10 @@ test("display: phase band always shown; timer and bar only with Show timer; stem
   await expect(d.page.locator(".stem-box")).toHaveCount(0);
   expect(await d.page.content()).not.toContain("Candidate instructions</p>");
 
-  // question: instructions return
+  // question: blank
   await h.page.locator("#skipBtn").click();
   await expect(d.page.locator("#dPhaseName")).toHaveText("Examiner question");
-  await expect(d.page.locator(".stem-box")).toContainText(EXAMPLE_INTRO);
+  await expect(d.page.locator(".stem-box")).toHaveCount(0);
   await h.ctx.close();
   await d.ctx.close();
 });

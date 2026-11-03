@@ -1,5 +1,5 @@
 import { type DisplaySnapshot, parseServerMsg, type ServerMsg } from "../../../worker/protocol";
-import { bindSmoothBar } from "../bar";
+import { bindSmoothBar, fillBar } from "../bar";
 import { audioRunning, bell, primeAudio, stopKeepAlive, testBell } from "../bell";
 import { mdSafe } from "../markdown";
 import { Connection, wsUrl } from "../sync";
@@ -164,6 +164,13 @@ export function mountDisplay(onLeave: () => void) {
   function showDone() {
     stopClock();
     black.classList.add("hidden");
+    // Same teal "Station finished" ribbon as the examiner's screen.
+    setPhaseColor("teal");
+    $("dTime").textContent = "0:00";
+    $("dPhaseName").textContent = "Station finished";
+    fillBar($("dBarFill"));
+    clock.classList.remove("hidden", "paused");
+    document.body.classList.add("in-station");
     const r = snap?.review;
     if (!snap || snap.timerOnly || !r) {
       center([h("p", "dmsg", "Station finished. Waiting for the next one.")], true);
@@ -177,7 +184,7 @@ export function mountDisplay(onLeave: () => void) {
     }
     if (r.answer) {
       const a = h("div", "answer");
-      a.append(h("p", "lbl", "Model answer"));
+      a.append(h("p", "answer-title", "Model answer"));
       const body = h("div", "md");
       body.innerHTML = mdSafe(r.answer);
       a.append(body);
@@ -223,10 +230,10 @@ export function mountDisplay(onLeave: () => void) {
     window.scrollTo({ top: 0 });
   }
 
-  /** The stem is shown in reading and question time, never during history taking. */
+  /** The stem is shown during reading time only. */
   function renderStem(phaseId: string) {
     const wrap = h("div", "");
-    if (snap && !snap.timerOnly && snap.stem && phaseId !== "history") {
+    if (snap && !snap.timerOnly && snap.stem && phaseId === "reading") {
       const box = h("div", "stem-box reading-big");
       box.append(h("p", "lbl", "Candidate instructions"), h("p", "s", snap.stem));
       wrap.append(box);

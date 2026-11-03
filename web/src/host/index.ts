@@ -428,6 +428,12 @@ export function mountHost(onJoin: (code: string) => void) {
     return `<details class="answer" ${open ? "open" : ""}><summary>Model answer</summary><div class="md">${md(current.answer)}</div></details>`;
   }
 
+  /** Finished screen: the model answer is simply shown, not a dropdown. */
+  function answerStatic() {
+    if (!current?.answer) return "";
+    return `<div class="answer"><p class="answer-title">Model answer</p><div class="md">${md(current.answer)}</div></div>`;
+  }
+
   function wireIndexLinks(root: ParentNode) {
     root.querySelectorAll<HTMLAnchorElement>(".index a").forEach((a) =>
       a.addEventListener("click", (e) => {
@@ -468,7 +474,7 @@ export function mountHost(onJoin: (code: string) => void) {
         `<div style="margin-top:26px">${answerBlock(false)}</div>` +
         `<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="showCaseBtn">Show case</button></div><div id="caseArea"></div>`;
     } else if (id === "done") {
-      html = `<div class="done-box">${questionBlock()}${answerBlock(true)}${stemBlock(false)}${caseBlock()}</div>`;
+      html = `<div class="done-box">${questionBlock()}${answerStatic()}${stemBlock(false)}${caseBlock()}</div>`;
     }
     els.stage.innerHTML = html;
     wireIndexLinks(els.stage);
