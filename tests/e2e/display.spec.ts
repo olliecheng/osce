@@ -276,6 +276,8 @@ test("join box: unknown code goes to the waiting room; Leave returns home; later
   await expect(d.page.locator("#lobbyMsg")).toHaveText(`Joined ${code}. Waiting for the station to start.`);
   await expect(d.page.locator("header #chipCode")).toHaveText(code);
 
+  await expect(d.page.locator("#takeoverBtn")).toBeVisible(); // the server's welcome has re-rendered the lobby
+
   // Leave sits outside the card, in red text with no background, right-aligned with the card
   const card = (await d.page.locator(".card").boundingBox()) as {
     x: number;
