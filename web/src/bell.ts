@@ -1,4 +1,6 @@
-/* Ported verbatim from the original single-file page (including the Safari workarounds). */
+/* Ported from the original single-file page (including the Safari workarounds), plus a
+   clock check: Safari can report "running" while output is dead, so we verify the context's
+   clock advances and otherwise rebuild it and fall back to <audio>. */
 let actx: AudioContext | null = null;
 try {
   const nav = navigator as Navigator & { audioSession?: { type: string } };
@@ -30,6 +32,21 @@ export function freshAudio() {
     actx = null;
   }
   return audio();
+}
+// Contexts whose clock has been seen advancing / seen frozen despite state "running".
+let healthy: AudioContext | null = null;
+let broken: AudioContext | null = null;
+function verifyOrFallback(ctx: AudioContext, times: number) {
+  const t0 = ctx.currentTime;
+  setTimeout(() => {
+    if (ctx.currentTime > t0) {
+      if (ctx === actx) healthy = ctx;
+      return;
+    }
+    if (healthy === ctx) healthy = null;
+    broken = ctx;
+    playFallback(times);
+  }, 150);
 }
 let keepAlive: { o: OscillatorNode; g: GainNode } | null = null;
 export function startKeepAlive() {
@@ -179,7 +196,8 @@ function playFallback(times: number) {
 
 // Call from a click: unlocks both audio paths for later, timer-driven bells.
 export function primeAudio(station?: boolean) {
-  const ctx = freshAudio();
+  // Reuse a context proven to be producing output; otherwise replace it.
+  const ctx = healthy && healthy === actx && actx.state === "running" ? audio() : freshAudio();
   if (station) startKeepAlive();
   if (ctx) {
     try {
@@ -207,9 +225,14 @@ export function primeAudio(station?: boolean) {
 }
 
 export function bell(times = 1) {
+  if (actx && actx === broken) freshAudio();
   const ctx = audio();
   if (!ctx) return playFallback(times);
-  if (ctx.state === "running") return playStrikes(ctx, times);
+  if (ctx.state === "running") {
+    playStrikes(ctx, times);
+    verifyOrFallback(ctx, times);
+    return;
+  }
   let done = false;
   const giveUp = setTimeout(() => {
     if (!done) {
@@ -223,8 +246,10 @@ export function bell(times = 1) {
       if (done) return;
       done = true;
       clearTimeout(giveUp);
-      if (ctx.state === "running") playStrikes(ctx, times);
-      else playFallback(times);
+      if (ctx.state === "running") {
+        playStrikes(ctx, times);
+        verifyOrFallback(ctx, times);
+      } else playFallback(times);
     })
     .catch(() => {
       if (!done) {
