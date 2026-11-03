@@ -1,6 +1,7 @@
 import { type DisplaySnapshot, parseServerMsg, type ServerMsg } from "../../../worker/protocol";
 import { bindSmoothBar } from "../bar";
 import { audioRunning, bell, primeAudio, stopKeepAlive, testBell } from "../bell";
+import { mdSafe } from "../markdown";
 import { Connection, wsUrl } from "../sync";
 import { fmt, PHASES, type PhaseColor, Timer } from "../timer";
 
@@ -157,13 +158,70 @@ export function mountDisplay(onLeave: () => void) {
     center(items, true);
   }
 
+  let snap: DisplaySnapshot | null = null;
+
+  /** Mirrors the examiner's finished screen: question, model answer, then the case sections. */
   function showDone() {
     stopClock();
     black.classList.add("hidden");
-    center([h("p", "dmsg", "Station finished. Waiting for the next one.")], true);
+    const r = snap?.review;
+    if (!snap || snap.timerOnly || !r) {
+      center([h("p", "dmsg", "Station finished. Waiting for the next one.")], true);
+      return;
+    }
+    const box = h("div", "done-box");
+    if (r.question) {
+      const q = h("div", "question-big");
+      q.append(h("p", "lbl", "Examiner asks"), h("p", "qq", r.question));
+      box.append(q);
+    }
+    if (r.answer) {
+      const a = h("div", "answer");
+      a.append(h("p", "lbl", "Model answer"));
+      const body = h("div", "md");
+      body.innerHTML = mdSafe(r.answer);
+      a.append(body);
+      box.append(a);
+    }
+    if (snap.stem) {
+      const s = h("div", "stem-box");
+      s.append(h("p", "lbl", "Candidate instructions"), h("p", "s", snap.stem));
+      box.append(s);
+    }
+    if (r.sections.length) {
+      const wrap = h("div", "case");
+      const nav = h("nav", "index");
+      nav.setAttribute("aria-label", "Case sections");
+      const secs = h("div", "sections");
+      r.sections.forEach((sec, i) => {
+        const a = h("a", "", sec.title);
+        a.href = `#dsec-${i}`;
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          document.getElementById(`dsec-${i}`)?.scrollIntoView({
+            behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+          });
+        });
+        nav.append(a);
+        const el = h("section", i === 0 ? "sec lead" : "sec");
+        el.id = `dsec-${i}`;
+        el.append(h("h3", "", sec.title));
+        const md = h("div", "md");
+        md.innerHTML = mdSafe(sec.md);
+        el.append(md);
+        secs.append(el);
+      });
+      wrap.append(nav, secs);
+      box.append(wrap);
+    }
+    const leave = h("button", "leave-btn", "Leave");
+    leave.id = "leaveBtn";
+    leave.type = "button";
+    leave.addEventListener("click", () => leaveRoom());
+    box.append(leave);
+    stage.replaceChildren(box);
+    window.scrollTo({ top: 0 });
   }
-
-  let snap: DisplaySnapshot | null = null;
 
   /** The stem is shown in reading and question time, never during history taking. */
   function renderStem(phaseId: string) {

@@ -26,7 +26,17 @@ export type DisplaySnapshot = {
   timerOnly: boolean;
   title: string | null;
   stem: string | null; // the case's intro; null in timer-only mode
+  review: DisplayReview | null; // non-null ONLY in the "done" phase; see sanitizeSnapshot
 };
+
+/** Station-finished material. Never present while a station is running (enforced in sanitizeSnapshot). */
+export type DisplayReview = {
+  question: string | null;
+  answer: string | null;
+  sections: { title: string; md: string }[];
+};
+
+const REVIEW_MAX_JSON = 48 * 1024; // keep the whole snapshot under MAX_MESSAGE_BYTES
 
 // host -> server
 export type HostMsg = { type: "snapshot"; snapshot: DisplaySnapshot } | { type: "close" } | { type: "ping" };
@@ -61,9 +71,24 @@ const strOrNull = (v: unknown, max: number): string | null | undefined =>
  * and on the server as defence in depth, so question/answer/sections can never
  * reach a display even if a caller passes extra keys.
  */
+function sanitizeReview(v: unknown): DisplayReview | null {
+  if (!isObj(v) || !Array.isArray(v.sections) || v.sections.length > 50) return null;
+  const question = strOrNull(v.question, 5000);
+  const answer = strOrNull(v.answer, 20000);
+  if (question === undefined || answer === undefined) return null;
+  const sections: DisplayReview["sections"] = [];
+  for (const sec of v.sections) {
+    if (!isObj(sec) || typeof sec.title !== "string" || typeof sec.md !== "string") return null;
+    if (sec.title.length > 200 || sec.md.length > 20000) return null;
+    sections.push({ title: sec.title, md: sec.md });
+  }
+  const out = { question, answer, sections };
+  return JSON.stringify(out).length <= REVIEW_MAX_JSON ? out : null;
+}
+
 export function sanitizeSnapshot(v: unknown): DisplaySnapshot | null {
   if (!isObj(v)) return null;
-  const { seq, sessionId, status, phase, remainingMs, paused, timerOnly, title, stem } = v;
+  const { seq, sessionId, status, phase, remainingMs, paused, timerOnly, title, stem, review } = v;
   if (typeof seq !== "number" || !Number.isFinite(seq)) return null;
   if (typeof sessionId !== "string" || sessionId.length > 64) return null;
   if (status !== "lobby" && status !== "running") return null;
@@ -73,6 +98,8 @@ export function sanitizeSnapshot(v: unknown): DisplaySnapshot | null {
   const t = strOrNull(title, 500);
   const s = strOrNull(stem, 5000);
   if (t === undefined || s === undefined) return null;
+  // The question, answer and sections are released only once the station has finished.
+  const rv = phase === "done" && timerOnly === false ? sanitizeReview(review) : null;
   return {
     seq,
     sessionId,
@@ -83,6 +110,7 @@ export function sanitizeSnapshot(v: unknown): DisplaySnapshot | null {
     timerOnly,
     title: t,
     stem: s,
+    review: rv,
   };
 }
 

@@ -55,6 +55,7 @@ describe("snapshot allow-list", () => {
       "paused",
       "phase",
       "remainingMs",
+      "review",
       "seq",
       "sessionId",
       "status",
@@ -63,6 +64,15 @@ describe("snapshot allow-list", () => {
       "title",
     ]);
     expect(JSON.stringify(clean)).not.toMatch(/Q\?|sections/);
+  });
+  it("releases review content only in the done phase of a real case", () => {
+    const review = { question: "Q?", answer: "A", sections: [{ title: "x", md: "y" }] };
+    expect(sanitizeSnapshot({ ...snap({ phase: "history" }), review })?.review).toBeNull();
+    expect(sanitizeSnapshot({ ...snap({ phase: "done", timerOnly: true }), review })?.review).toBeNull();
+    expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review })?.review).toEqual(review);
+    expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review: { ...review, extra: 1 } })?.review).toEqual(
+      review,
+    );
   });
   it("parseHostMsg drops invalid and oversized messages", () => {
     expect(parseHostMsg("{nope")).toBeNull();
