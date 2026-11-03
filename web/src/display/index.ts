@@ -1,6 +1,7 @@
 import { type DisplaySnapshot, parseServerMsg, type ServerMsg } from "../../../worker/protocol";
 import { bindSmoothBar, fillBar } from "../bar";
 import { audioRunning, bell, primeAudio, stopKeepAlive, testBell } from "../bell";
+import { downloadCase } from "../download";
 import { mdSafe } from "../markdown";
 import { Connection, wsUrl } from "../sync";
 import { fmt, PHASES, type PhaseColor, Timer } from "../timer";
@@ -235,7 +236,21 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
     leave.id = "leaveBtn";
     leave.type = "button";
     leave.addEventListener("click", () => leaveRoom());
-    box.append(leave);
+    const dl = h("button", "takeover-btn", "Download .md");
+    dl.id = "downloadMdBtn";
+    dl.type = "button";
+    dl.addEventListener("click", () =>
+      downloadCase({
+        title: snap?.title ?? "Case",
+        intro: snap?.stem ?? "",
+        question: r.question ?? "",
+        answer: r.answer ?? "",
+        sections: r.sections,
+      }),
+    );
+    const actions = h("div", "dactions");
+    actions.append(dl, leave);
+    box.append(actions);
     stage.replaceChildren(box);
     window.scrollTo({ top: 0 });
   }

@@ -73,3 +73,21 @@ export function parseCase(text: string, sourceName: string): CaseData | null {
   const title = meta.title || (sourceName || "Case").replace(/\.(md|markdown|txt)$/i, "");
   return { title, intro, question, answer: meta.answer || "", sections };
 }
+
+/** Block-scalar front-matter value: parseFrontMatter reads it back unchanged (apart from leading indentation). */
+function yamlBlock(key: string, v: string): string {
+  return `${key}: |\n${v
+    .split(/\r?\n/)
+    .map((l) => (l ? `  ${l}` : ""))
+    .join("\n")}\n`;
+}
+
+/** Serialise a case back to the .md format parseCase reads. Sections use `#` so any deeper headings inside them survive. */
+export function caseToMarkdown(c: CaseData): string {
+  let fm = yamlBlock("title", c.title || "Case");
+  if (c.intro) fm += yamlBlock("intro", c.intro);
+  if (c.question) fm += yamlBlock("question", c.question);
+  if (c.answer) fm += yamlBlock("answer", c.answer);
+  const body = c.sections.map((s) => `# ${s.title}\n\n${s.md}\n`).join("\n");
+  return `---\n${fm}---\n\n${body}`;
+}

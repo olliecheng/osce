@@ -2,6 +2,7 @@ import { normalizeCode } from "../../../worker/protocol";
 import { bindSmoothBar, fillBar } from "../bar";
 import { bell, primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
+import { downloadCase } from "../download";
 import { esc, md } from "../markdown";
 import type { HostView } from "../snapshot";
 import { fmt, type PhaseColor, Timer } from "../timer";
@@ -479,10 +480,13 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
         `<div style="margin-top:26px">${answerBlock(false)}</div>` +
         `<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="showCaseBtn">Show case</button></div><div id="caseArea"></div>`;
     } else if (id === "done") {
-      html = `<div class="done-box">${questionBlock()}${answerStatic()}${stemBlock(false)}${caseBlock()}</div>`;
+      html = `<div class="done-box">${questionBlock()}${answerStatic()}${stemBlock(false)}${caseBlock()}<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="downloadMdBtn">Download .md</button></div></div>`;
     }
     els.stage.innerHTML = html;
     wireIndexLinks(els.stage);
+    if (id === "done" && current)
+      $("downloadMdBtn").addEventListener("click", () => downloadCase(current as CaseData));
+    else if (id === "done") $("downloadMdBtn").remove();
     if (id === "question") wireShowCase($("showCaseBtn"), $("caseArea"));
   }
 

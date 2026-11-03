@@ -327,6 +327,30 @@ test("a viewer can take over as host; the old host becomes a viewer of the same 
   await d.ctx.close();
 });
 
+test("host and viewer can download the case as .md from the finished screen", async ({ browser }) => {
+  const h = await newPage(browser);
+  const d = await newPage(browser);
+  await openHost(h.page);
+  const code = await createRoom(h.page);
+  await joinDisplay(d.page, code);
+  await expect(d.page.locator("#lobbyMsg")).toBeVisible();
+  await startStation(h.page);
+  await expect(d.page.locator("#downloadMdBtn")).toHaveCount(0); // nothing while running
+  for (let i = 0; i < 3; i++) await h.page.locator("#skipBtn").click();
+  await expect(d.page.locator("#dPhaseName")).toHaveText("Station finished");
+  for (const page of [h.page, d.page]) {
+    const dl = page.waitForEvent("download");
+    await page.locator("#downloadMdBtn").click();
+    const file = await dl;
+    expect(file.suggestedFilename()).toBe("chest-pain-in-a-62-year-old-man.md");
+    const text = await (await import("node:fs/promises")).readFile((await file.path()) as string, "utf8");
+    expect(text).toContain("title: |");
+    expect(text).toContain("Peter Walsh");
+  }
+  await h.ctx.close();
+  await d.ctx.close();
+});
+
 test("clicking the room code makes a new room; viewers of the old one are told", async ({ browser }) => {
   const h = await newPage(browser);
   const d = await newPage(browser);

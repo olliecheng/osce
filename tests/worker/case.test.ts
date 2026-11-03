@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseCase, parseFrontMatter, splitSections } from "../../web/src/case";
+import { caseToMarkdown, parseCase, parseFrontMatter, splitSections } from "../../web/src/case";
 import { TEMPLATE } from "../../web/src/host/content";
 
 describe("parseFrontMatter", () => {
@@ -62,5 +62,24 @@ describe("parseCase", () => {
   it("rejects empty input and derives the title from the file name", () => {
     expect(parseCase("", "x.md")).toBeNull();
     expect(parseCase("---\nintro: hi\n---\n", "my-case.md")?.title).toBe("my-case");
+  });
+});
+
+describe("caseToMarkdown", () => {
+  it("round-trips the example case through parseCase", () => {
+    const c = parseCase(TEMPLATE, "x.md");
+    expect(c).not.toBeNull();
+    const back = parseCase(caseToMarkdown(c as NonNullable<typeof c>), "x.md");
+    expect(back).toEqual(c);
+  });
+  it("keeps colons, quotes and multi-line values intact", () => {
+    const c = {
+      title: 'A: "b"',
+      intro: "one\ntwo",
+      question: "Q?",
+      answer: "x: y\n\nz",
+      sections: [{ title: "S", md: "## sub\ntext" }],
+    };
+    expect(parseCase(caseToMarkdown(c), "x.md")).toEqual(c);
   });
 });
