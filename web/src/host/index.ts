@@ -1,3 +1,4 @@
+import { CODE_RE, normalizeCode } from "../../../worker/protocol";
 import { bell, primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
 import { esc, md } from "../markdown";
@@ -40,6 +41,8 @@ export function mountHost() {
 
   /* ---------- case state ---------- */
   let current: CaseData | null = null;
+  const resetCaseBtn = $<HTMLButtonElement>("resetCaseBtn");
+  resetCaseBtn.addEventListener("click", clearCase);
 
   function loadCase(text: string, sourceName: string): boolean {
     const c = parseCase(text, sourceName);
@@ -77,6 +80,22 @@ export function mountHost() {
       .join("");
     els.planChecks.classList.remove("hidden");
     els.startBtn.disabled = false;
+    resetCaseBtn.disabled = false;
+  }
+
+  function clearCase() {
+    current = null;
+    try {
+      localStorage.removeItem("osce-last-case");
+    } catch {}
+    els.planTitle.textContent = "No case loaded";
+    els.planStem.textContent = "The candidate’s introductory sentence will appear here.";
+    els.planStem.classList.add("empty");
+    els.planChecks.innerHTML = "";
+    els.planChecks.classList.add("hidden");
+    els.startBtn.disabled = true;
+    resetCaseBtn.disabled = true;
+    setStatus("Case cleared.");
   }
 
   function setStatus(msg: string, isErr?: boolean) {
@@ -160,6 +179,17 @@ export function mountHost() {
       setStatus(`Reloaded last case (${saved.sourceName || "file"}).`);
     }
   } catch {}
+
+  /* ---------- join box: open this device as a display ---------- */
+  $("joinForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const code = normalizeCode($<HTMLInputElement>("joinCode").value);
+    if (!CODE_RE.test(code)) {
+      $("joinBoxErr").textContent = "Enter the 4-letter code (letters only, no I or O).";
+      return;
+    }
+    location.href = `/join?code=${code}`;
+  });
 
   /* ---------- timer ---------- */
   const timer = new Timer();

@@ -11,10 +11,6 @@
 <header class="top">
   <div class="wrap">
     <div class="brand">OSCE Simulation Platform</div>
-    <nav class="hnav" aria-label="Mode">
-      <a class="btn" id="navHost" href="/host">Host</a>
-      <a class="btn" id="navJoin" href="/join">Join</a>
-    </nav>
     <div class="room-chip hidden" id="roomChip" aria-live="polite"><span>Room</span><span class="c" id="chipCode"></span><span id="chipNote"></span><button class="btn quiet hidden" id="roomRetry" type="button">Retry</button></div>
     <button class="btn quiet" id="bellTest" type="button">Test bell</button>
   </div>
@@ -24,8 +20,18 @@
 <div id="hostApp" class="hidden">
   <!-- SETUP -->
   <main id="setup" class="wrap setup">
-    <section class="drop" id="drop">
-      <h1>Load a case</h1>
+    <div class="stack">
+    <section class="drop" id="joinBox" aria-labelledby="joinTitle">
+      <h2 id="joinTitle">Join</h2>
+      <p>Show a candidate’s screen on this device: enter the room code from the host.</p>
+      <form class="row" id="joinForm">
+        <input class="code-input" id="joinCode" maxlength="8" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="ABCD" aria-label="4-letter room code">
+        <button class="btn primary" id="joinGo" type="submit">Join</button>
+      </form>
+      <p class="status err" id="joinBoxErr" role="alert"></p>
+    </section>
+    <section class="drop" id="drop" aria-labelledby="loadTitle">
+      <h2 id="loadTitle">Load a case</h2>
       <p>Choose a Markdown case file or drop it here. The patient sections are shown to the role-player during history time.</p>
       <div class="row">
         <button class="btn primary" id="pasteBtn" type="button" aria-expanded="false" aria-controls="pastePanel">Paste .md</button>
@@ -44,6 +50,7 @@
       </div>
       <p class="status" id="status" role="status" aria-live="polite"></p>
     </section>
+    </div>
   
     <section class="plan" aria-labelledby="planTitle">
       <h2 id="planTitle">No case loaded</h2>
@@ -57,6 +64,9 @@
       <div class="actions">
         <button class="btn primary big" id="startBtn" type="button" disabled>Start station</button>
         <button class="btn big" id="timerOnlyBtn" type="button">Run timer only</button>
+        <button class="btn icon-btn" id="resetCaseBtn" type="button" title="Reset case" aria-label="Reset case" disabled>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        </button>
       </div>
     </section>
   </main>
