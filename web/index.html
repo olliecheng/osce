@@ -27,7 +27,7 @@
     <section class="drop join-box" id="joinBox" aria-labelledby="joinTitle">
       <form class="join-line" id="joinForm">
         <h2 id="joinTitle">Join a room</h2>
-        <input class="code-input" id="joinCode" maxlength="4" minlength="4" required pattern="[A-HJ-NP-Za-hj-np-z]{4}" title="4 letters (no I or O)" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="ABCD" aria-label="4-letter room code">
+        <input class="code-input" id="joinCode" maxlength="4" minlength="4" required pattern="[A-HJ-NP-Za-hj-np-z]{4}" title="4 letters (no I or O)" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="characters" enterkeyhint="go" placeholder="ABCD" aria-label="4-letter room code">
         <button class="btn primary" id="joinGo" type="submit" aria-label="Join" title="Join">→</button>
       </form>
     </section>
@@ -40,7 +40,7 @@
         <button class="btn quiet" id="exampleBtn" type="button">Load example case</button>
         <input type="file" id="fileIn" accept=".md,.markdown,.txt,text/markdown,text/plain" class="hidden">
       </div>
-      <button class="btn help-btn" id="helpBtn" type="button"><span class="q" aria-hidden="true">?</span>How to write a case</button>
+      <button class="btn help-btn" id="helpBtn" type="button"><span class="q" aria-hidden="true"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="square" stroke-linejoin="miter"><path d="M8 8.5a4 4 0 1 1 6.2 3.3c-1.4.9-2.2 1.6-2.2 3.2"/><path d="M12 19.5v.5"/></svg></span>How to write a case</button>
       <div class="paste hidden" id="pastePanel">
         <label for="pasteIn">Paste the case Markdown, including the front matter</label>
         <textarea id="pasteIn" spellcheck="false" autocomplete="off" placeholder="---&#10;intro: &quot;...&quot;&#10;question: &quot;...&quot;&#10;---&#10;&#10;## Introduction&#10;..."></textarea>

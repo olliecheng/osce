@@ -74,10 +74,13 @@
   box-sizing: inherit;
 }
 html {
+  background: var(--head-bg);
   scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 140px);
 }
 body {
   margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   color: var(--ink);
   font-family: var(--body);
@@ -1015,6 +1018,7 @@ header.top .btn{padding-top:8px;padding-bottom:8px}
 #bellTest{display:inline-flex;align-items:center;gap:4px;font-weight:400;font-size:.9rem}
 #bellTest svg{display:block;flex:none;transform:translateY(-2px)}
 @media (max-width:700px){
+  header.top .brand{flex:0 0 100%}
   #bellTest{margin-left:auto}
   header.top .wrap{row-gap:0;padding-top:6px;padding-bottom:2px}
   header.top .btn{padding-top:2px;padding-bottom:2px}
