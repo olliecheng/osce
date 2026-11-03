@@ -43,7 +43,7 @@ export type HostMsg = { type: "snapshot"; snapshot: DisplaySnapshot } | { type: 
 
 // server -> display
 export type ServerMsg =
-  | { type: "welcome"; code: string; status: Status; hostConnected: boolean }
+  | { type: "welcome"; code: string; status: Status; hostConnected: boolean; hostToken?: string }
   | { type: "snapshot"; snapshot: DisplaySnapshot }
   | { type: "host"; connected: boolean }
   | { type: "closed" } // the room was closed (sent just before close code 4004)
@@ -151,7 +151,13 @@ export function parseServerMsg(raw: unknown): ServerMsg | ServerToHost | null {
     case "welcome":
       if (typeof v.code !== "string") return null;
       if ((v.status === "lobby" || v.status === "running") && typeof v.hostConnected === "boolean")
-        return { type: "welcome", code: v.code, status: v.status, hostConnected: v.hostConnected };
+        return {
+          type: "welcome",
+          code: v.code,
+          status: v.status,
+          hostConnected: v.hostConnected,
+          ...(typeof v.hostToken === "string" ? { hostToken: v.hostToken } : {}),
+        };
       return { type: "welcome", code: v.code };
     case "host":
       return typeof v.connected === "boolean" ? { type: "host", connected: v.connected } : null;

@@ -166,6 +166,20 @@ describe("room service", () => {
     expect(h2.closed).toBeNull();
   });
 
+  it("welcome shares the host token so a viewer can take over; the old host is replaced (4002)", async () => {
+    const { code, hostToken } = await createRoomHttp();
+    const h1 = await host(code, hostToken);
+    const d = await display(code);
+    await until(() => d.msgs.some((m) => m.type === "welcome"));
+    const welcome = d.msgs.find((m) => m.type === "welcome");
+    expect(welcome?.hostToken).toBe(hostToken);
+    const h2 = await host(code, welcome?.hostToken);
+    await until(() => h1.closed);
+    expect(h1.closed?.code).toBe(CLOSE.HOST_REPLACED);
+    expect(h1.msgs.some((m) => m.type === "replaced")).toBe(true);
+    expect(h2.closed).toBeNull();
+  });
+
   it("host disconnect -> alarm -> displays closed with 4004", async () => {
     const { code, hostToken } = await createRoomHttp();
     const h = await host(code, hostToken);

@@ -298,6 +298,33 @@ test("join box: unknown code goes to the waiting room; Leave returns home; later
   await d.ctx.close();
 });
 
+test("a viewer can take over as host; the old host becomes a viewer of the same room", async ({
+  browser,
+}) => {
+  const h = await newPage(browser);
+  const d = await newPage(browser);
+  await openHost(h.page);
+  const code = await createRoom(h.page);
+  await joinDisplay(d.page, code);
+  await expect(d.page.locator("#lobbyMsg")).toHaveText(`Joined ${code}. Waiting for the station to start.`);
+
+  // Take over sits immediately left of Leave
+  const take = (await d.page.locator("#takeoverBtn").boundingBox()) as { x: number; width: number };
+  const leave = (await d.page.locator("#leaveBtn").boundingBox()) as { x: number; width: number };
+  expect(take.x + take.width).toBeLessThanOrEqual(leave.x);
+
+  await d.page.locator("#takeoverBtn").click();
+  await expect(d.page.locator("#displayApp")).toBeHidden();
+  await expect(d.page.locator("header #chipCode")).toHaveText(code);
+  await expect(d.page.locator("#joinCode")).toBeVisible();
+
+  // The previous host is now a viewer of the same room, and can take it back
+  await expect(h.page.locator("#lobbyMsg")).toHaveText(`Joined ${code}. Waiting for the station to start.`);
+  await expect(h.page.locator("#takeoverBtn")).toBeVisible();
+  await h.ctx.close();
+  await d.ctx.close();
+});
+
 test("host refresh reclaims the room and returns displays to the lobby", async ({ browser }) => {
   const h = await newPage(browser);
   const d = await newPage(browser);

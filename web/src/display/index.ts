@@ -19,7 +19,7 @@ function h<K extends keyof HTMLElementTagNameMap>(
 }
 
 /** Display view, shown in place of the host view. `onLeave` returns the user to the home screen. */
-export function mountDisplay(onLeave: () => void) {
+export function mountDisplay(onLeave: () => void, onTakeover: (code: string, token: string) => void) {
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   const originalTitle = document.title;
 
@@ -35,6 +35,7 @@ export function mountDisplay(onLeave: () => void) {
   let code = "";
   let joined = false;
   let hostConnected = true;
+  let hostToken = ""; // shared by the server; lets any viewer take over as host
   let linkLost = false;
   let sessionId = "";
   let tickId: ReturnType<typeof setInterval> | undefined;
@@ -126,8 +127,8 @@ export function mountDisplay(onLeave: () => void) {
     clock.classList.add("hidden");
     document.body.classList.remove("in-station");
   }
-  /** A centred card; with `withLeave`, a red text "Leave" button sits under it, aligned to its right edge. */
-  function center(children: HTMLElement[], withLeave = false) {
+  /** A centred card; with `withLeave`, red text "Leave" (and optionally "Take over as host") sits under it, right-aligned. */
+  function center(children: HTMLElement[], withLeave = false, withTakeover = false) {
     const card = h("div", "card");
     card.append(...children);
     const col = h("div", "dcol");
@@ -137,7 +138,16 @@ export function mountDisplay(onLeave: () => void) {
       leave.id = "leaveBtn";
       leave.type = "button";
       leave.addEventListener("click", () => leaveRoom());
-      col.append(leave);
+      const actions = h("div", "dactions");
+      if (withTakeover) {
+        const take = h("button", "takeover-btn", "Take over as host");
+        take.id = "takeoverBtn";
+        take.type = "button";
+        take.addEventListener("click", () => takeOver());
+        actions.append(take);
+      }
+      actions.append(leave);
+      col.append(actions);
     }
     const wrap = h("div", "dcenter");
     wrap.append(col);
@@ -155,7 +165,7 @@ export function mountDisplay(onLeave: () => void) {
     msg.id = "lobbyMsg";
     const items = [msg];
     if (noHost) items.push(h("p", "dmsg sub", `Looking for room ${code}…`));
-    center(items, true);
+    center(items, true, !noHost && hostToken !== "");
   }
 
   let snap: DisplaySnapshot | null = null;
@@ -314,14 +324,29 @@ export function mountDisplay(onLeave: () => void) {
     conn?.close();
     conn = null;
     hostConnected = true; // no "host disconnected" banner on top of "No host found."
+    hostToken = "";
     updateBanner();
     showLobby(true);
     clearTimeout(retryTimer);
     retryTimer = setTimeout(connect, 4000);
   }
 
+  /** Become the host of this room: tear the viewer down and hand the shared token to the host view. */
+  function takeOver() {
+    const c = code;
+    const t = hostToken;
+    if (!t) return;
+    teardown();
+    onTakeover(c, t);
+  }
+
   /** Tear the display down completely and go back to the home screen. */
   function leaveRoom() {
+    teardown();
+    onLeave();
+  }
+
+  function teardown() {
     clearTimeout(retryTimer);
     conn?.close();
     conn = null;
@@ -342,13 +367,14 @@ export function mountDisplay(onLeave: () => void) {
     $("displayApp").classList.add("hidden");
     document.body.classList.remove("in-station");
     document.title = originalTitle;
-    onLeave();
+    hostToken = "";
   }
 
   function onServer(m: ServerMsg) {
     switch (m.type) {
       case "welcome":
         hostConnected = m.hostConnected;
+        hostToken = m.hostToken ?? "";
         updateBanner();
         showLobby();
         break;

@@ -1,4 +1,4 @@
-import { type DisplaySnapshot, parseServerMsg, type ServerToHost } from "../../../worker/protocol";
+import { CLOSE, type DisplaySnapshot, parseServerMsg, type ServerToHost } from "../../../worker/protocol";
 import { buildSnapshot, type HostView } from "../snapshot";
 import { Connection, wsUrl } from "../sync";
 
@@ -23,6 +23,7 @@ export class HostRoom {
   constructor(
     private getView: () => Omit<HostView, "seq">,
     private onChange: () => void,
+    private onReplaced: (code: string) => void = () => {},
   ) {}
 
   private saved(): Saved | null {
@@ -39,6 +40,15 @@ export class HostRoom {
     const s = this.saved();
     if (s) this.attach(s);
     return s !== null;
+  }
+
+  /** Become host of an existing room (a viewer taking over) using its shared token. */
+  adopt(code: string, token: string) {
+    const s = { code, token };
+    try {
+      sessionStorage.setItem(KEY, JSON.stringify(s));
+    } catch {}
+    this.attach(s);
   }
 
   async create(): Promise<void> {
@@ -72,12 +82,13 @@ export class HostRoom {
         const m = parseServerMsg(data) as ServerToHost | null;
         if (!m) return;
         // The room is gone or taken over: start a fresh one.
-        if (m.type === "replaced" || m.type === "error") this.drop();
+        if (m.type === "replaced") this.drop(s.code);
+        else if (m.type === "error") this.drop();
       },
-      onClose: ({ willRetry }) => {
+      onClose: ({ code, willRetry }) => {
         this.ui.connected = false;
         if (!willRetry) {
-          this.drop(); // 4002 (taken over) or 4003 (room gone): start a fresh room
+          this.drop(code === CLOSE.HOST_REPLACED ? s.code : undefined); // 4002 (taken over) or 4003 (room gone)
           return;
         }
         this.onChange();
@@ -90,9 +101,10 @@ export class HostRoom {
     this.onChange();
   }
 
-  /** The current room is unusable: forget it and create a new one. */
-  private drop() {
-    this.conn?.close(); // stop reconnecting
+  /** The current room is unusable: forget it and create a new one. `tookOver` is the room another device took. */
+  private drop(tookOver?: string) {
+    if (!this.conn) return; // already dropped (the message and the close event both land here)
+    this.conn.close(); // stop reconnecting
     this.conn = null;
     try {
       sessionStorage.removeItem(KEY);
@@ -102,6 +114,7 @@ export class HostRoom {
     this.ui = { code: null, connected: false, notice: "" };
     this.onChange();
     void this.create();
+    if (tookOver) this.onReplaced(tookOver);
   }
 
   get active(): boolean {

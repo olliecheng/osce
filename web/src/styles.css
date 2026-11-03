@@ -1008,6 +1008,9 @@ body.in-station .show-timer{color:var(--muted)}
 
 /* display waiting room: Leave sits under the card, right-aligned */
 .dcol{display:grid;gap:10px;width:fit-content;max-width:100%}
+.dactions{display:flex;justify-content:flex-end;align-items:center;gap:6px;flex-wrap:wrap}
+.takeover-btn{appearance:none;background:transparent;border:2px solid transparent;color:var(--primary);font:inherit;font-weight:600;padding:6px 12px;cursor:pointer}
+.takeover-btn:hover{border-color:currentColor}
 .leave-btn{justify-self:end;appearance:none;background:transparent;border:2px solid transparent;color:var(--red);font:inherit;font-weight:600;padding:6px 12px;cursor:pointer}
 .leave-btn:hover{background:var(--red-soft);border-color:var(--red)}
 

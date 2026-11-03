@@ -107,6 +107,8 @@ export class Room extends DurableObject<Env> {
           code: state.code,
           status: state.status,
           hostConnected: state.hostConnected,
+          // Any viewer may take over as host, so the token is shared with everyone in the room.
+          hostToken: state.hostToken,
         });
         if (state.snapshot) this.send(server, { type: "snapshot", snapshot: state.snapshot });
       }

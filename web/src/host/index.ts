@@ -8,7 +8,7 @@ import { fmt, type PhaseColor, Timer } from "../timer";
 import { PROMPT, TEMPLATE } from "./content";
 import { HostRoom } from "./room";
 
-export function mountHost(onJoin: (code: string) => void) {
+export function mountHost(onJoin: (code: string) => void, onReplaced: (code: string) => void = () => {}) {
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   $("hostApp").classList.remove("hidden");
 
@@ -245,7 +245,7 @@ export function mountHost(onJoin: (code: string) => void) {
     if (timer.finished) return { ...base, status: "lobby", phase: "done", remainingMs: null, paused: false };
     return { ...base, case: null, status: "lobby", phase: null, remainingMs: null, paused: false };
   }
-  const room = new HostRoom(view, renderRoom);
+  const room = new HostRoom(view, renderRoom, onReplaced);
 
   const roomChip = $("roomChip");
   function renderRoom() {
@@ -522,6 +522,11 @@ export function mountHost(onJoin: (code: string) => void) {
     },
     hide() {
       $("hostApp").classList.add("hidden");
+    },
+    /** A viewer took over: become host of that room with the shared token. */
+    takeOver(code: string, token: string) {
+      room.adopt(code, token);
+      this.show();
     },
   };
 }
