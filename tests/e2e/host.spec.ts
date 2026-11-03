@@ -40,8 +40,11 @@ test("host page: header, room code, join box, help button, reset case", async ({
   await expect(page.locator("#joinBoxErr")).toContainText("4-letter code");
   await page.locator("#joinCode").fill("abcd");
   await page.locator("#joinGo").click();
-  await expect(page).toHaveURL(/\/join\?code=ABCD$/);
+  await expect(page).toHaveURL(/\/$/); // no separate /join path
   await expect(page.locator("#lobbyMsg")).toHaveText("No host found.");
+  await page.locator("#leaveBtn").click();
+  await expect(page.locator("#joinCode")).toBeVisible(); // back on the home screen
+  await expect(page.locator("header #chipCode")).toHaveText(/^[A-HJ-NP-Z]{4}$/);
 });
 
 test("host alone: full station on a fake clock rings at 60 s (x2), 420 s (x1), 480 s (x2), 540 s (x2)", async ({

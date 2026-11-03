@@ -7,7 +7,7 @@ import { fmt, type PhaseColor, Timer } from "../timer";
 import { PROMPT, TEMPLATE } from "./content";
 import { HostRoom } from "./room";
 
-export function mountHost() {
+export function mountHost(onJoin: (code: string) => void) {
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
   $("hostApp").classList.remove("hidden");
 
@@ -188,7 +188,8 @@ export function mountHost() {
       $("joinBoxErr").textContent = "Enter the 4-letter code (letters only, no I or O).";
       return;
     }
-    location.href = `/join?code=${code}`;
+    $("joinBoxErr").textContent = "";
+    onJoin(code);
   });
 
   /* ---------- timer ---------- */
@@ -527,4 +528,15 @@ export function mountHost() {
   // A refresh mid-station loses timer state; reclaim the room and go back to the lobby.
   if (!room.reclaim()) room.create();
   renderRoom();
+
+  return {
+    show() {
+      $("hostApp").classList.remove("hidden");
+      $<HTMLInputElement>("joinCode").value = "";
+      renderRoom(); // restore this host's room code in the header
+    },
+    hide() {
+      $("hostApp").classList.add("hidden");
+    },
+  };
 }

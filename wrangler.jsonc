@@ -20,7 +20,7 @@
     {
       "name": "JOIN_LIMITER",
       "namespace_id": "1001",
-      "simple": { "limit": 20, "period": 60 }
+      "simple": { "limit": 120, "period": 60 }
     }
   ],
   "observability": { "enabled": true }

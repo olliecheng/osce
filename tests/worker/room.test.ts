@@ -210,7 +210,7 @@ describe("room service", () => {
   it("rate-limits display joins per IP", async () => {
     const { code } = await createRoomHttp();
     const statuses: number[] = [];
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 130; i++) {
       const { res, client } = await connect(code, "role=display");
       statuses.push(res.status);
       client?.ws.close(1000);

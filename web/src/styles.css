@@ -983,10 +983,10 @@ body.in-station .show-timer{color:var(--muted)}
 
 /* compact one-row join box */
 .join-box{padding:14px 20px;gap:4px;justify-items:stretch}
-.join-line{display:flex;align-items:center;gap:12px;width:100%}
-.join-line h2{margin-right:auto}
-.join-line .code-input{font-size:1.1rem;width:5.5ch;padding:5px 5px 5px calc(5px + .3em);letter-spacing:.3em}
-.join-line .btn{padding:6px 14px;font-size:1.1rem;line-height:1.2}
+.join-line{display:flex;align-items:stretch;gap:10px;width:100%}
+.join-line h2{margin-right:auto;align-self:center}
+.join-line .code-input{font-size:1.1rem;line-height:1.2;width:8ch;padding:6px 8px 6px calc(8px + .3em);letter-spacing:.3em;border-width:2px;margin:0}
+.join-line .btn{padding:0 16px;font-size:1.1rem;line-height:1.2;display:inline-flex;align-items:center}
 .join-box .status{margin:0;font-size:.9rem}
 .join-box .status:empty{display:none}
 

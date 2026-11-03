@@ -1,10 +1,4 @@
-import {
-  CODE_RE,
-  type DisplaySnapshot,
-  normalizeCode,
-  parseServerMsg,
-  type ServerMsg,
-} from "../../../worker/protocol";
+import { type DisplaySnapshot, parseServerMsg, type ServerMsg } from "../../../worker/protocol";
 import { audioRunning, bell, primeAudio, stopKeepAlive, testBell } from "../bell";
 import { Connection, wsUrl } from "../sync";
 import { fmt, PHASES, type PhaseColor, Timer } from "../timer";
@@ -22,10 +16,10 @@ function h<K extends keyof HTMLElementTagNameMap>(
   return el;
 }
 
-export function mountDisplay() {
+/** Display view, shown in place of the host view. `onLeave` returns the user to the home screen. */
+export function mountDisplay(onLeave: () => void) {
   const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
-  $("displayApp").classList.remove("hidden");
-  document.title = TITLE;
+  const originalTitle = document.title;
 
   const stage = $("dStage");
   const clock = $("dClock");
@@ -148,57 +142,6 @@ export function mountDisplay() {
     stage.replaceChildren(wrap);
   }
 
-  function showJoin(message = "", prefill = "") {
-    stopClock();
-    stopKeepAlive();
-    keepAwake(false);
-    black.classList.add("hidden");
-    enableSound.classList.add("hidden");
-    joined = false;
-    $("roomChip").classList.add("hidden");
-    $("showTimerWrap").classList.add("hidden");
-    linkLost = false;
-    updateBanner();
-    document.title = TITLE;
-
-    const title = h("h2", "dmsg", "Join as display");
-    const input = h("input", "code-input");
-    input.id = "codeIn";
-    input.maxLength = 8;
-    input.autocomplete = "off";
-    input.spellcheck = false;
-    input.autocapitalize = "characters";
-    input.placeholder = "ABCD";
-    input.setAttribute("aria-label", "4-letter room code");
-    input.value = prefill;
-    const err = h("p", "err-text", message);
-    err.id = "joinErr";
-    err.setAttribute("role", "alert");
-    const btn = h("button", "btn primary big", "Join");
-    btn.id = "joinBtn";
-    btn.type = "button";
-    const form = h("div", "row");
-    form.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center";
-    form.append(input, btn);
-    const back = h("a", "btn quiet", "Back");
-    back.href = "/";
-    center([title, h("p", "dmsg sub", "Enter the code shown on the host’s screen."), form, err, back]);
-    const go = () => {
-      const c = normalizeCode(input.value);
-      if (!CODE_RE.test(c)) {
-        err.textContent = "Enter the 4-letter code (letters only, no I or O).";
-        input.focus();
-        return;
-      }
-      join(c);
-    };
-    btn.addEventListener("click", go);
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") go();
-    });
-    input.focus();
-  }
-
   function showLobby(noHost = false) {
     stopClock();
     black.classList.add("hidden");
@@ -311,11 +254,29 @@ export function mountDisplay() {
     retryTimer = setTimeout(connect, 4000);
   }
 
+  /** Tear the display down completely and go back to the home screen. */
   function leaveRoom() {
     clearTimeout(retryTimer);
     conn?.close();
     conn = null;
-    showJoin("", "");
+    stopClock();
+    stopKeepAlive();
+    keepAwake(false);
+    black.classList.add("hidden");
+    enableSound.classList.add("hidden");
+    joined = false;
+    snap = null;
+    sessionId = "";
+    rung.clear();
+    linkLost = false;
+    updateBanner();
+    $("roomChip").classList.add("hidden");
+    $("showTimerWrap").classList.add("hidden");
+    stage.replaceChildren();
+    $("displayApp").classList.add("hidden");
+    document.body.classList.remove("in-station");
+    document.title = originalTitle;
+    onLeave();
   }
 
   function onServer(m: ServerMsg) {
@@ -345,7 +306,11 @@ export function mountDisplay() {
   enableSound.addEventListener("click", () => primeAudio(true));
   setInterval(() => enableSound.classList.toggle("hidden", !joined || audioRunning()), 1000);
 
-  const prefill = normalizeCode(new URLSearchParams(location.search).get("code") ?? "");
-  if (CODE_RE.test(prefill)) join(prefill);
-  else showJoin();
+  return {
+    start(c: string) {
+      $("displayApp").classList.remove("hidden");
+      document.title = TITLE;
+      join(c);
+    },
+  };
 }

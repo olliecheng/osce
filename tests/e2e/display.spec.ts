@@ -228,30 +228,37 @@ test("display: phase band always shown; timer and bar only with Show timer; stem
   await d.ctx.close();
 });
 
-test("display: unknown code goes to the waiting room with No host found; bad code on the form errors", async ({
+test("join box: unknown code goes to the waiting room; Leave returns home; later joins work", async ({
   browser,
 }) => {
   const d = await newPage(browser);
-  await d.page.goto("/join");
-  await d.page.locator("#codeIn").fill("ab1");
-  await d.page.locator("#joinBtn").click();
-  await expect(d.page.locator("#joinErr")).toContainText("4-letter code");
-  await d.page.locator("#codeIn").fill("zzzy");
-  await d.page.locator("#joinBtn").click();
+  await d.page.goto("/");
+  await expect(d.page.locator("#joinTitle")).toHaveText("Join a room");
+  await d.page.locator("#joinCode").fill("ab1");
+  await d.page.locator("#joinGo").click();
+  await expect(d.page.locator("#joinBoxErr")).toContainText("4-letter code");
+  await d.page.locator("#joinCode").fill("zzzy");
+  await d.page.locator("#joinGo").click();
   await expect(d.page.locator("#lobbyMsg")).toHaveText("No host found.");
   await expect(d.page.locator("#leaveBtn")).toBeVisible();
+  await d.page.locator("#leaveBtn").click();
+  await expect(d.page.locator("#joinCode")).toBeVisible();
+  await expect(d.page.locator("#displayApp")).toBeHidden();
 
-  // a host appearing later (same code) is picked up without any click
+  // the code box and button are the same height
+  const input = (await d.page.locator("#joinCode").boundingBox()) as { height: number };
+  const button = (await d.page.locator("#joinGo").boundingBox()) as { height: number };
+  expect(Math.abs(input.height - button.height)).toBeLessThan(0.5);
+
   const h = await newPage(browser);
   await openHost(h.page);
   const code = await createRoom(h.page);
-  await d.page.locator("#leaveBtn").click();
-  await d.page.locator("#codeIn").fill(code.toLowerCase());
-  await d.page.locator("#joinBtn").click();
+  await d.page.locator("#joinCode").fill(code.toLowerCase());
+  await d.page.locator("#joinGo").click();
   await expect(d.page.locator("#lobbyMsg")).toHaveText(`Joined ${code}. Waiting for the station to start.`);
   await expect(d.page.locator("header #chipCode")).toHaveText(code);
 
-  // Leave is outside the card, in red text with no background, right-aligned with the card
+  // Leave sits outside the card, in red text with no background, right-aligned with the card
   const card = (await d.page.locator(".card").boundingBox()) as {
     x: number;
     y: number;
