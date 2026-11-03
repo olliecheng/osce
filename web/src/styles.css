@@ -24,7 +24,6 @@
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   color-scheme: light;
   box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 @media (prefers-color-scheme: dark) {
@@ -91,7 +90,10 @@ body::before {
   inset: 0 0 auto;
   height: env(safe-area-inset-top, 0px);
   z-index: 10;
-  background: var(--surface);
+  background: var(--head-bg);
+}
+body.in-station::before {
+  background: var(--bg);
 }
 button,
 input {
@@ -940,7 +942,8 @@ a.btn {
 
 
 /* ---------- University-style theme: squares, solid edges, navy ---------- */
-header.top{background:var(--head-bg);color:var(--head-ink);border-bottom:4px solid #8a63d2}
+header.top{background:var(--head-bg);color:var(--head-ink);border-bottom:4px solid #8a63d2;padding-top:env(safe-area-inset-top,0px)}
+.dstage{padding-block:24px 80px}
 .brand{margin-right:auto;font-weight:700;letter-spacing:0;font-size:1.35rem;color:var(--head-ink)}
 header.top .btn{background:transparent;color:var(--head-ink);border-color:var(--head-ink)}
 header.top .btn:hover{background:rgba(255,255,255,.14)}
