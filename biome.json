@@ -1,0 +1,24 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
+  "files": {
+    "includes": [
+      "**",
+      "!dist",
+      "!.wrangler",
+      "!worker-configuration.d.ts",
+      "!osce.html",
+      "!plan.md",
+      "!web/index.html",
+      "!web/public",
+      "!web/src/styles.css"
+    ]
+  },
+  "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 110 },
+  "linter": {
+    "rules": {
+      "preset": "recommended",
+      "suspicious": { "useIterableCallbackReturn": "off", "noExplicitAny": "off" },
+      "style": { "noNonNullAssertion": "off" }
+    }
+  }
+}

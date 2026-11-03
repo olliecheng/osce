@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OSCE history station</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+</head>
+<body>
+
+<!-- LANDING (/) -->
+<div id="landing" class="hidden">
+  <header class="top"><div class="wrap"><div class="brand">OSCE history station</div></div></header>
+  <main class="wrap landing">
+    <section class="card">
+      <h2>Run station</h2>
+      <p>Load a case and run the timed station. Use this on the role-player’s device.</p>
+      <a class="btn primary big" id="runLink" href="/host">Run station</a>
+    </section>
+    <section class="card">
+      <h2>Join as display</h2>
+      <p>Show the candidate’s screen: the stem, and a timer that appears on hover.</p>
+      <a class="btn big" id="joinLink" href="/join">Join as display</a>
+    </section>
+  </main>
+</div>
+
+<!-- HOST (/host) -->
+<div id="hostApp" class="hidden">
+  <header class="top">
+    <div class="wrap">
+      <button class="btn help-btn" id="helpBtn" type="button"><span class="q" aria-hidden="true">?</span>How to write a case</button>
+      <div class="brand">OSCE history station</div>
+      <div class="room-chip hidden" id="roomChip" aria-live="polite"><span>Room</span><span class="c" id="chipCode"></span><span id="chipCount"></span><span id="chipNote"></span></div>
+      <button class="btn quiet" id="bellTest" type="button">Test bell</button>
+    </div>
+  </header>
+  
+  <!-- SETUP -->
+  <main id="setup" class="wrap setup">
+    <section class="drop" id="drop">
+      <h1>Load a case</h1>
+      <p>Choose a Markdown case file or drop it here. The patient sections are shown to the role-player during history time.</p>
+      <div class="row">
+        <button class="btn primary" id="pasteBtn" type="button" aria-expanded="false" aria-controls="pastePanel">Paste .md</button>
+        <button class="btn" id="pickBtn" type="button">Choose .md file</button>
+        <button class="btn quiet" id="exampleBtn" type="button">Load example case</button>
+        <input type="file" id="fileIn" accept=".md,.markdown,.txt,text/markdown,text/plain" class="hidden">
+      </div>
+      <div class="paste hidden" id="pastePanel">
+        <label for="pasteIn">Paste the case Markdown, including the front matter</label>
+        <textarea id="pasteIn" spellcheck="false" autocomplete="off" placeholder="---&#10;intro: &quot;...&quot;&#10;question: &quot;...&quot;&#10;---&#10;&#10;## Introduction&#10;..."></textarea>
+        <div class="row">
+          <button class="btn primary" id="pasteLoad" type="button">Load</button>
+          <button class="btn quiet" id="pasteCancel" type="button">Cancel</button>
+        </div>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </section>
+  
+    <section class="plan" aria-labelledby="planTitle">
+      <h2 id="planTitle">No case loaded</h2>
+      <p class="stem empty" id="planStem">The candidate’s introductory sentence will appear here.</p>
+      <ul class="checks hidden" id="planChecks"></ul>
+      <div class="track" aria-label="Station timing">
+        <div class="r">Reading<small>1 min</small></div>
+        <div class="h">History<small>7 min</small></div>
+        <div class="x">Q<small>1 min</small></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary big" id="startBtn" type="button" disabled>Start station</button>
+        <button class="btn big" id="timerOnlyBtn" type="button">Run timer only</button>
+      </div>
+      <div class="room" id="roomArea">
+        <h3>Second screen</h3>
+        <p class="hint" id="roomHint">Show the stem and a hidden timer on a candidate’s screen. Optional.</p>
+        <button class="btn" id="createRoomBtn" type="button">Create room</button>
+        <div class="hidden" id="roomLive">
+          <div class="room-code" id="roomCode" aria-label="Room code"></div>
+          <p class="room-meta" id="roomMeta" role="status" aria-live="polite"></p>
+          <button class="btn" id="closeRoomBtn" type="button">Close room</button>
+        </div>
+        <p class="status err" id="roomErr" role="alert"></p>
+      </div>
+    </section>
+  </main>
+  
+  <!-- RUN -->
+  <div id="run" class="hidden">
+    <div class="clock" id="clock">
+      <div class="wrap">
+        <div class="time" id="time" aria-live="off">1:00</div>
+        <div>
+          <div class="phase-name" id="phaseName">Reading time</div>
+          <div class="phase-next" id="phaseNext">Next: history</div>
+        </div>
+        <div class="ctrl">
+          <button class="btn" id="pauseBtn" type="button">Pause</button>
+          <button class="btn" id="skipBtn" type="button">Skip to next</button>
+          <button class="btn" id="resetBtn" type="button">End station</button>
+        </div>
+        <div class="bar"><span id="barFill"></span></div>
+      </div>
+    </div>
+    <main class="wrap stage" id="stage"></main>
+  </div>
+  
+  <!-- HELP DIALOG -->
+  <div class="ready hidden" id="ready" role="dialog" aria-modal="true" aria-label="Ready to start">
+    <div class="ready-inner">
+      <button class="btn big ready-go" id="readyGo" type="button">Start</button>
+      <button class="btn quiet ready-cancel" id="readyCancel" type="button">Cancel</button>
+    </div>
+  </div>
+  <dialog id="help" aria-labelledby="helpTitle">
+    <div class="dlg">
+      <header>
+        <h2 id="helpTitle">How to write a case file</h2>
+        <button class="btn primary big" type="button" data-copy="prompt">Copy agent prompt</button>
+        <button class="btn" id="helpClose" type="button">Close</button>
+      </header>
+      <div class="body">
+        <h3>Format</h3>
+        <p>A case is one Markdown file with two parts.</p>
+        <ul>
+          <li><strong>Front matter</strong> between two <code>---</code> lines at the very top. <code>intro</code> is the sentence the candidate reads at the door. <code>question</code> is the examiner’s question in the final minute. <code>title</code> and <code>answer</code> (a model answer, revealed at the end) are optional. Use <code>|</code> for multi-line values.</li>
+          <li><strong>Body</strong> split into <code>##</code> headings such as Introduction, Presenting complaint, HPC, PMHx, Medications, Allergies, FHx, SHx, Systems review, ICE and Role-player notes. Each heading becomes a section on the role-player’s screen; <code>###</code> sub-headings stay inside their section.</li>
+          <li>Write content in the patient’s voice. Put things the patient only says when asked as <code>- If asked about X: “…”</code> bullets, and things they never volunteer in bold.</li>
+        </ul>
+  
+        <h3>Template</h3>
+        <div class="codebox"><button class="btn primary" type="button" data-copy="tpl">Copy template</button><pre id="tpl"></pre></div>
+  
+        <h3>Prompt for an AI agent</h3>
+        <p>Paste this into an assistant, replacing the bracketed part, and save the reply as a <code>.md</code> file.</p>
+        <div class="codebox"><button class="btn primary" type="button" data-copy="prompt">Copy prompt</button><pre id="prompt"></pre></div>
+      </div>
+    </div>
+  </dialog>
+</div>
+
+<!-- DISPLAY (/join) -->
+<div id="displayApp" class="hidden">
+  <div class="dview">
+    <div class="clock dclock hidden" id="dClock" tabindex="0" aria-label="Timer">
+      <div class="wrap">
+        <div class="time" id="dTime" aria-live="off">1:00</div>
+        <div>
+          <div class="phase-name" id="dPhaseName"></div>
+          <div class="phase-next" id="dPhaseNext"></div>
+        </div>
+        <div class="bar"><span id="dBarFill"></span></div>
+      </div>
+    </div>
+    <main class="wrap dstage" id="dStage"></main>
+  </div>
+  <div class="banner hidden" id="dBanner" role="status"></div>
+  <div class="dtools">
+    <button class="btn hidden" id="dEnableSound" type="button">Tap to enable sound</button>
+    <button class="btn quiet" id="dTestBell" type="button">Test bell</button>
+  </div>
+  <div class="black hidden" id="dBlack"></div>
+</div>
+
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>

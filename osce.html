@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OSCE history station</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<style>
+:root{
+  --bg:#F3F6F5; --surface:#FFFFFF; --ink:#1C2A2E; --muted:#5B6B6F; --line:#D5DEDC;
+  --teal:#1F6F64; --teal-soft:#E1EFEC; --amber:#A8670F; --amber-soft:#F7EBD6;
+  --red:#B03E2C; --red-soft:#F6E1DC; --focus:#2E5FD8;
+  --phase:var(--teal); --phase-soft:var(--teal-soft);
+  --body:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --display:"Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111A1C; --surface:#182326; --ink:#E4ECEA; --muted:#9AABAE; --line:#2B3A3D;
+    --teal:#4FB3A3; --teal-soft:#183331; --amber:#E2A647; --amber-soft:#3A2D16;
+    --red:#EA7A66; --red-soft:#3D211C; --focus:#8FB0FF;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111A1C; --surface:#182326; --ink:#E4ECEA; --muted:#9AABAE; --line:#2B3A3D;
+  --teal:#4FB3A3; --teal-soft:#183331; --amber:#E2A647; --amber-soft:#3A2D16;
+  --red:#EA7A66; --red-soft:#3D211C; --focus:#8FB0FF;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 140px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;font-feature-settings:"cv11","ss01"}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* header */
+header.top{background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:14px;min-height:60px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.brand{font-family:var(--display);font-weight:600;font-size:1.3rem;margin-right:auto;letter-spacing:.01em}
+.btn{appearance:none;border:1px solid var(--line);background:var(--surface);border-radius:4px;padding:9px 15px;cursor:pointer;font-weight:700;font-size:.95rem;line-height:1.2}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{color:#0D1A18}}
+:root[data-theme="dark"] .btn.primary{color:#0D1A18}
+.btn.big{font-size:1.15rem;padding:14px 26px;border-radius:4px}
+.btn.quiet{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.quiet:hover{color:var(--ink)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.help-btn{display:inline-flex;align-items:center;gap:8px}
+.help-btn .q{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--surface);font-size:.85rem}
+
+/* setup */
+.setup{padding:40px 0 60px;display:grid;gap:28px;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+@media (max-width:820px){.setup{grid-template-columns:1fr}}
+.drop{border:2px dashed var(--line);border-radius:6px;background:var(--surface);padding:36px 28px;display:grid;gap:14px;align-content:start;justify-items:start;transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--teal);background:var(--teal-soft)}
+.drop h1{font-family:var(--display);font-weight:600;font-size:2.1rem;line-height:1.1;margin:0}
+.drop p{margin:0;color:var(--muted);max-width:52ch}
+.drop .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.paste{justify-self:stretch;display:grid;gap:8px}
+.paste label{font-weight:700;font-size:.95rem}
+.paste textarea{width:100%;min-height:260px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.85rem;line-height:1.45;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:12px 14px}
+.status{margin:0;font-size:.95rem}
+.status.err{color:var(--red)}
+.plan{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:26px 28px;display:grid;gap:18px;align-content:start}
+.plan h2{font-family:var(--display);font-weight:600;font-size:1.5rem;margin:0;line-height:1.2}
+.plan .stem{margin:0;font-size:1.05rem}
+.plan .stem.empty{color:var(--muted);font-style:italic}
+.track{display:grid;grid-template-columns:1fr 7fr 1fr;gap:4px}
+.track div{border-radius:2px;padding:8px 10px;font-size:.85rem;font-weight:700;line-height:1.25}
+.track .r{background:var(--amber-soft);color:var(--amber)}
+.track .h{background:var(--teal-soft);color:var(--teal)}
+.track .x{background:var(--red-soft);color:var(--red)}
+.track small{display:block;font-weight:400;opacity:.9}
+.checks{margin:0;padding:0;list-style:none;display:grid;gap:4px;font-size:.95rem}
+.checks li::before{content:"✓";color:var(--teal);font-weight:700;margin-right:8px}
+.checks li.miss::before{content:"!";color:var(--red)}
+.plan .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* run view */
+.clock{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--phase);color:#fff;transition:background .4s}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .clock{color:#0D1A18}}
+:root[data-theme="dark"] .clock{color:#0D1A18}
+.clock .wrap{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px 24px;padding-top:12px;padding-bottom:12px}
+.time{font-family:var(--display);font-weight:700;font-size:clamp(3rem,8.5vw,5.2rem);line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.phase-name{font-family:var(--display);font-weight:600;font-size:1.5rem;line-height:1.1}
+.phase-next{font-size:.95rem;opacity:.85}
+.clock .ctrl{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.clock .btn{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.35);color:inherit}
+.clock .btn:hover{background:rgba(255,255,255,.26)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .clock .btn{background:rgba(0,0,0,.12);border-color:rgba(0,0,0,.3)}}
+:root[data-theme="dark"] .clock .btn{background:rgba(0,0,0,.12);border-color:rgba(0,0,0,.3)}
+.bar{grid-column:1/-1;height:6px;background:rgba(255,255,255,.25);border-radius:1px;overflow:hidden}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bar{background:rgba(0,0,0,.2)}}
+:root[data-theme="dark"] .bar{background:rgba(0,0,0,.2)}
+.bar span{display:block;height:100%;background:currentColor;width:0}
+.clock.paused .time{opacity:.55}
+.clock .btn.armed{background:#fff;color:var(--red);border-color:#fff}
+@media (max-width:700px){
+  .clock .wrap{grid-template-columns:auto 1fr}
+  .clock .ctrl{grid-column:1/-1;justify-content:flex-start}
+}
+
+.stage{padding:30px 0 80px}
+.stem-box{border-left:5px solid var(--phase);background:var(--surface);padding:18px 22px;border-radius:0 4px 4px 0;margin-bottom:26px}
+.stem-box .lbl{font-size:.9rem;color:var(--muted);margin:0 0 4px}
+.stem-box p.s{margin:0;font-size:1.15rem;max-width:70ch}
+.reading-big p.s{font-size:clamp(1.3rem,2.6vw,1.8rem);line-height:1.4}
+.question-big{background:var(--surface);border:2px solid var(--red);border-radius:6px;padding:30px 30px}
+.question-big .lbl{color:var(--red);font-weight:700;margin:0 0 8px}
+.question-big .qq{font-size:clamp(1.4rem,3vw,2.1rem);line-height:1.35;margin:0;max-width:40ch;font-family:var(--display);font-weight:600}
+.answer{margin-top:22px;border-top:1px solid var(--line);padding-top:18px}
+.answer summary{cursor:pointer;font-weight:700}
+.answer .md{margin-top:10px}
+
+.case{display:grid;grid-template-columns:220px minmax(0,1fr);gap:30px;align-items:start}
+@media (max-width:820px){.case{grid-template-columns:1fr}}
+nav.index{position:sticky;top:calc(env(safe-area-inset-top,0px) + 150px);display:grid;gap:2px}
+nav.index a{display:block;color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:3px;font-size:.95rem;line-height:1.3}
+nav.index a:hover{background:var(--surface);color:var(--ink)}
+@media (max-width:820px){
+  nav.index{position:static;display:flex;flex-wrap:wrap;gap:6px}
+  nav.index a{border:1px solid var(--line);background:var(--surface)}
+}
+.sections{columns:2 340px;column-gap:30px}
+.sec{break-inside:avoid;margin:0 0 26px;padding-left:16px;border-left:3px solid var(--line)}
+.sec h3{font-family:var(--display);font-weight:600;font-size:1.35rem;margin:0 0 6px;line-height:1.2;color:var(--teal)}
+.sec.lead{border-left-color:var(--teal)}
+.md > :first-child{margin-top:0}
+.md > :last-child{margin-bottom:0}
+.md p,.md ul,.md ol{margin:0 0 .6em}
+.md ul,.md ol{padding-left:1.25em}
+.md li{margin:.15em 0}
+.md h1,.md h2,.md h3,.md h4{font-family:var(--display);font-weight:600;font-size:1.1rem;margin:.9em 0 .3em}
+.md strong{color:var(--ink)}
+.md em{color:var(--muted)}
+.md blockquote{margin:.4em 0;padding:.2em 0 .2em 12px;border-left:3px solid var(--amber);color:var(--ink)}
+.md code{font-size:.9em;background:var(--bg);padding:1px 5px;border-radius:2px}
+.md table{border-collapse:collapse;display:block;overflow-x:auto;max-width:100%}
+.md th,.md td{border:1px solid var(--line);padding:4px 8px;text-align:left}
+.done-box{display:grid;gap:22px}
+.done-box .actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* modal */
+dialog{border:none;border-radius:6px;padding:0;max-width:min(860px,94vw);width:100%;max-height:88vh;background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:rgba(10,20,22,.55)}
+.dlg{display:flex;flex-direction:column;max-height:88vh}
+.dlg header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:18px 24px;border-bottom:1px solid var(--line)}
+.dlg header h2{font-family:var(--display);font-weight:600;font-size:1.5rem;margin:0;margin-right:auto}
+.dlg .body{overflow-y:auto;padding:20px 24px 28px}
+.dlg .body h3{font-family:var(--display);font-weight:600;font-size:1.2rem;margin:22px 0 6px}
+.dlg .body h3:first-child{margin-top:0}
+.dlg .body p,.dlg .body ul{margin:0 0 .7em;max-width:72ch}
+.dlg .body ul{padding-left:1.2em}
+.codebox{position:relative;margin:8px 0 4px}
+.codebox pre{margin:0;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:14px 16px;overflow-x:auto;font-size:.85rem;line-height:1.45;max-height:340px}
+.codebox .btn{position:absolute;top:8px;right:8px;font-size:.8rem;padding:6px 10px}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.hidden{display:none !important}
+.ready{position:fixed;inset:0;z-index:20;background:#000;display:grid;place-items:center}
+.ready-inner{display:grid;gap:14px;justify-items:center}
+.ready .ready-go{background:#fff;color:#000;border-color:#fff;font-size:1.4rem;padding:18px 56px}
+.ready .ready-go:hover{background:#e6e6e6}
+.ready .ready-cancel{color:#8a8a8a}
+.ready .ready-cancel:hover{color:#fff}
+@media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <button class="btn help-btn" id="helpBtn" type="button"><span class="q" aria-hidden="true">?</span>How to write a case</button>
+    <div class="brand">OSCE history station</div>
+    <button class="btn quiet" id="bellTest" type="button">Test bell</button>
+  </div>
+</header>
+
+<!-- SETUP -->
+<main id="setup" class="wrap setup">
+  <section class="drop" id="drop">
+    <h1>Load a case</h1>
+    <p>Choose a Markdown case file or drop it here. The patient sections are shown to the role-player during history time.</p>
+    <div class="row">
+      <button class="btn primary" id="pasteBtn" type="button" aria-expanded="false" aria-controls="pastePanel">Paste .md</button>
+      <button class="btn" id="pickBtn" type="button">Choose .md file</button>
+      <button class="btn quiet" id="exampleBtn" type="button">Load example case</button>
+      <input type="file" id="fileIn" accept=".md,.markdown,.txt,text/markdown,text/plain" class="hidden">
+    </div>
+    <div class="paste hidden" id="pastePanel">
+      <label for="pasteIn">Paste the case Markdown, including the front matter</label>
+      <textarea id="pasteIn" spellcheck="false" autocomplete="off" placeholder="---&#10;intro: &quot;...&quot;&#10;question: &quot;...&quot;&#10;---&#10;&#10;## Introduction&#10;..."></textarea>
+      <div class="row">
+        <button class="btn primary" id="pasteLoad" type="button">Load</button>
+        <button class="btn quiet" id="pasteCancel" type="button">Cancel</button>
+      </div>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+  </section>
+
+  <section class="plan" aria-labelledby="planTitle">
+    <h2 id="planTitle">No case loaded</h2>
+    <p class="stem empty" id="planStem">The candidate’s introductory sentence will appear here.</p>
+    <ul class="checks hidden" id="planChecks"></ul>
+    <div class="track" aria-label="Station timing">
+      <div class="r">Reading<small>1 min</small></div>
+      <div class="h">History<small>7 min</small></div>
+      <div class="x">Q<small>1 min</small></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary big" id="startBtn" type="button" disabled>Start station</button>
+      <button class="btn big" id="timerOnlyBtn" type="button">Run timer only</button>
+    </div>
+  </section>
+</main>
+
+<!-- RUN -->
+<div id="run" class="hidden">
+  <div class="clock" id="clock">
+    <div class="wrap">
+      <div class="time" id="time" aria-live="off">1:00</div>
+      <div>
+        <div class="phase-name" id="phaseName">Reading time</div>
+        <div class="phase-next" id="phaseNext">Next: history</div>
+      </div>
+      <div class="ctrl">
+        <button class="btn" id="pauseBtn" type="button">Pause</button>
+        <button class="btn" id="skipBtn" type="button">Skip to next</button>
+        <button class="btn" id="resetBtn" type="button">End station</button>
+      </div>
+      <div class="bar"><span id="barFill"></span></div>
+    </div>
+  </div>
+  <main class="wrap stage" id="stage"></main>
+</div>
+
+<!-- HELP DIALOG -->
+<div class="ready hidden" id="ready" role="dialog" aria-modal="true" aria-label="Ready to start">
+  <div class="ready-inner">
+    <button class="btn big ready-go" id="readyGo" type="button">Start</button>
+    <button class="btn quiet ready-cancel" id="readyCancel" type="button">Cancel</button>
+  </div>
+</div>
+<dialog id="help" aria-labelledby="helpTitle">
+  <div class="dlg">
+    <header>
+      <h2 id="helpTitle">How to write a case file</h2>
+      <button class="btn primary big" type="button" data-copy="prompt">Copy agent prompt</button>
+      <button class="btn" id="helpClose" type="button">Close</button>
+    </header>
+    <div class="body">
+      <h3>Format</h3>
+      <p>A case is one Markdown file with two parts.</p>
+      <ul>
+        <li><strong>Front matter</strong> between two <code>---</code> lines at the very top. <code>intro</code> is the sentence the candidate reads at the door. <code>question</code> is the examiner’s question in the final minute. <code>title</code> and <code>answer</code> (a model answer, revealed at the end) are optional. Use <code>|</code> for multi-line values.</li>
+        <li><strong>Body</strong> split into <code>##</code> headings such as Introduction, Presenting complaint, HPC, PMHx, Medications, Allergies, FHx, SHx, Systems review, ICE and Role-player notes. Each heading becomes a section on the role-player’s screen; <code>###</code> sub-headings stay inside their section.</li>
+        <li>Write content in the patient’s voice. Put things the patient only says when asked as <code>- If asked about X: “…”</code> bullets, and things they never volunteer in bold.</li>
+      </ul>
+
+      <h3>Template</h3>
+      <div class="codebox"><button class="btn primary" type="button" data-copy="tpl">Copy template</button><pre id="tpl"></pre></div>
+
+      <h3>Prompt for an AI agent</h3>
+      <p>Paste this into an assistant, replacing the bracketed part, and save the reply as a <code>.md</code> file.</p>
+      <div class="codebox"><button class="btn primary" type="button" data-copy="prompt">Copy prompt</button><pre id="prompt"></pre></div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+"use strict";
+
+/* ---------- content ---------- */
+const TEMPLATE = `---
+title: Chest pain in a 62-year-old man
+intro: "You are a medical student in the emergency department. Mr Peter Walsh, 62, has presented with chest pain. Take a focused history."
+question: "What is your most likely diagnosis, and what are two differentials you would want to exclude?"
+answer: |
+  Most likely: acute coronary syndrome (unstable angina / NSTEMI).
+  Differentials: aortic dissection, pulmonary embolism, pericarditis, GORD.
+---
+
+## Introduction
+- Name: Peter Walsh, 62, retired electrician.
+- Opening line: "I've had this horrible pain in my chest this morning."
+- Sitting forward slightly, rubbing sternum, anxious but cooperative.
+
+## Presenting complaint
+Central chest pain for 2 hours.
+
+## History of presenting complaint
+- Site: centre of chest, "behind the breastbone".
+- Onset: came on at 7 am while carrying the bins up the driveway.
+- Character: "heavy, like someone sitting on me".
+- Radiation: **only if asked** - into the left arm and jaw.
+- Associations: sweaty and a bit sick in the stomach.
+- Timing: constant since onset, eased a little with rest but not gone.
+- Exacerbating / relieving: worse walking, no change with position or breathing.
+- Severity: 7/10.
+- If asked about previous episodes: "I've had tightness walking up hills for a month or so, but it always went away after a few minutes."
+
+## Systems review
+- If asked about shortness of breath: "A bit, yes."
+- If asked about palpitations, cough, fever, leg swelling, recent travel: no.
+- If asked about indigestion: "No, this isn't like heartburn."
+
+## PMHx
+- Type 2 diabetes for 10 years.
+- High blood pressure.
+- High cholesterol - "I was meant to start a tablet but never did."
+- No previous heart attacks or stents.
+
+## Medications
+- Metformin 1 g twice daily.
+- Perindopril 5 mg daily.
+- No over-the-counter medications.
+
+## Allergies
+- Penicillin - rash as a child.
+
+## FHx
+- Father died of a heart attack at 58.
+- Mother alive, 85, has dementia.
+
+## SHx
+- Lives with wife in a single-storey house; independent.
+- Smoking: 30 pack-years, **quit 5 years ago** (only if asked).
+- Alcohol: 2-3 beers most nights.
+- No recreational drugs.
+- Retired; plays lawn bowls weekly.
+
+## ICE
+- Ideas: "I'm worried it's my heart - Dad went the same way."
+- Concerns: wife at home doesn't know he's here.
+- Expectations: "I just want to know what's going on."
+
+## Role-player notes
+- Become more anxious if the candidate is rushed or uses jargon.
+- Ask "Am I having a heart attack?" at about 5 minutes if not addressed.
+`;
+
+const PROMPT = `Write a mock OSCE history-taking case for a medical student, as a single Markdown file and nothing else.
+
+Case: [presenting complaint, setting, patient age/sex, intended diagnosis, difficulty]
+
+Format rules (the file is parsed by a timer app, so follow them exactly):
+1. Start with YAML front matter between two lines of three dashes (---). Required keys:
+   - intro: one or two sentences the candidate reads before entering (setting, patient name/age, task, e.g. "Take a focused history.")
+   - question: the single question the examiner asks in the final minute.
+   Optional keys: title (short case name), answer (model answer; use "answer: |" then indented lines for multiple lines).
+   Wrap single-line values in double quotes.
+2. After the front matter, use level-2 headings (##) in this order, omitting none unless irrelevant:
+   Introduction, Presenting complaint, History of presenting complaint, Systems review, PMHx, Medications, Allergies, FHx, SHx, ICE, Role-player notes.
+   Add other ## headings only if the case needs them (e.g. Obstetric history, Sexual history, Developmental history).
+3. Under each heading use short bullets written for the actor playing the patient:
+   - Facts in plain lay language, first person where it is something the patient says (in quotes).
+   - Information the patient only gives when specifically asked: "- If asked about <topic>: <answer>".
+   - Mark key facts the patient must never volunteer in **bold** with "(only if asked)".
+   - Include pertinent negatives the candidate is expected to ask about.
+4. "Introduction" gives name, age, occupation, the patient's opening line, and demeanour.
+5. "History of presenting complaint" covers SOCRATES (or the relevant framework) and timeline.
+6. "Medications" includes doses. "SHx" covers living situation, function, smoking (pack-years), alcohol (standard drinks), drugs, occupation, and anything case-relevant.
+7. "ICE" gives the patient's ideas, concerns and expectations.
+8. "Role-player notes" gives cues, emotional reactions, and a question the patient asks if the candidate doesn't address something.
+9. The history must be completable in 7 minutes by a competent student: one coherent diagnosis with 2-3 plausible differentials, realistic for an Australian hospital or general practice setting (Australian drug names and units).
+10. Do not include headings or text outside this structure. Use - for bullets.`;
+
+const PHASES = [
+  { id: "reading",  name: "Reading time",       secs: 60,  color: "amber", next: "Next: history taking" },
+  { id: "history",  name: "History taking",     secs: 420, color: "teal",  next: "Next: examiner question", warn: 60 },
+  { id: "question", name: "Examiner question",  secs: 60,  color: "red",   next: "Last phase" }
+];
+
+/* ---------- elements ---------- */
+const $ = id => document.getElementById(id);
+const els = {
+  setup: $("setup"), run: $("run"), drop: $("drop"), fileIn: $("fileIn"), pickBtn: $("pickBtn"),
+  exampleBtn: $("exampleBtn"), status: $("status"), planTitle: $("planTitle"), planStem: $("planStem"),
+  planChecks: $("planChecks"), startBtn: $("startBtn"), clock: $("clock"), time: $("time"),
+  phaseName: $("phaseName"), phaseNext: $("phaseNext"), pauseBtn: $("pauseBtn"), skipBtn: $("skipBtn"),
+  resetBtn: $("resetBtn"), barFill: $("barFill"), stage: $("stage"), help: $("help"),
+  helpBtn: $("helpBtn"), helpClose: $("helpClose"), bellTest: $("bellTest")
+};
+$("tpl").textContent = TEMPLATE;
+$("prompt").textContent = PROMPT;
+
+/* ---------- parsing ---------- */
+function parseFrontMatter(text) {
+  text = text.replace(/^\uFEFF/, "");
+  const m = text.match(/^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/);
+  if (!m) return { meta: {}, body: text };
+  const meta = {};
+  const lines = m[1].split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const km = lines[i].match(/^([A-Za-z_][\w-]*)\s*:\s*(.*)$/);
+    if (!km) continue;
+    const key = km[1].toLowerCase().replace(/-/g, "_");
+    let val = km[2].trim();
+    if (/^[|>][-+]?$/.test(val)) {
+      const fold = val[0] === ">";
+      const buf = [];
+      while (i + 1 < lines.length && (/^\s+\S/.test(lines[i + 1]) || lines[i + 1].trim() === "")) {
+        buf.push(lines[++i].replace(/^\s+/, ""));
+      }
+      val = fold ? buf.join(" ").replace(/\s+/g, " ").trim() : buf.join("\n").trim();
+    } else if (/^".*"$/.test(val)) {
+      val = val.slice(1, -1).replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+    } else if (/^'.*'$/.test(val)) {
+      val = val.slice(1, -1).replace(/''/g, "'");
+    }
+    meta[key] = val;
+  }
+  return { meta, body: text.slice(m[0].length) };
+}
+
+function splitSections(body) {
+  const lines = body.split(/\r?\n/);
+  let inFence = false, minLevel = 7;
+  const isHead = [];
+  lines.forEach((l, i) => {
+    if (/^\s*(```|~~~)/.test(l)) inFence = !inFence;
+    const h = !inFence && l.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
+    isHead[i] = h ? { level: h[1].length, title: h[2] } : null;
+    if (h && h[1].length < minLevel) minLevel = h[1].length;
+  });
+  if (minLevel === 7) return body.trim() ? [{ title: "Case", md: body.trim() }] : [];
+  const sections = [];
+  let cur = { title: null, buf: [] };
+  lines.forEach((l, i) => {
+    const h = isHead[i];
+    if (h && h.level === minLevel) {
+      if (cur.title !== null || cur.buf.join("").trim()) sections.push(cur);
+      cur = { title: h.title, buf: [] };
+    } else cur.buf.push(l);
+  });
+  sections.push(cur);
+  return sections
+    .map(s => ({ title: s.title || "Notes", md: s.buf.join("\n").trim() }))
+    .filter(s => s.title !== "Notes" || s.md);
+}
+
+function md(text) {
+  try { if (window.marked) return window.marked.parse(text || ""); } catch (e) {}
+  const esc = (text || "").replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  return `<p style="white-space:pre-wrap">${esc}</p>`;
+}
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+/* ---------- case state ---------- */
+let current = null;
+
+function loadCase(text, sourceName) {
+  const { meta, body } = parseFrontMatter(text);
+  const intro = meta.intro || meta.introduction || meta.stem || meta.intro_sentence || "";
+  const question = meta.question || meta.final_question || meta.examiner_question || "";
+  const sections = splitSections(body);
+  if (!sections.length && !intro && !question) {
+    setStatus(`${sourceName} has no front matter or headings. Open “How to write a case” for the format.`, true);
+    return false;
+  }
+  const title = meta.title || (sourceName || "Case").replace(/\.(md|markdown|txt)$/i, "");
+  current = { title, intro, question, answer: meta.answer || "", sections };
+  try { localStorage.setItem("osce-last-case", JSON.stringify({ text, sourceName })); } catch (e) {}
+  renderPlan();
+  setStatus(`Loaded ${sourceName}.`);
+  return true;
+}
+
+function renderPlan() {
+  const c = current;
+  els.planTitle.textContent = c.title;
+  els.planStem.textContent = c.intro || "No intro sentence in the front matter.";
+  els.planStem.classList.toggle("empty", !c.intro);
+  const checks = [
+    [!!c.intro, c.intro ? "Intro sentence" : "Missing intro in front matter"],
+    [!!c.question, c.question ? "Examiner question" : "Missing question in front matter"],
+    [c.sections.length > 0, `${c.sections.length} section${c.sections.length === 1 ? "" : "s"}: ${c.sections.map(s => s.title).join(", ")}`]
+  ];
+  els.planChecks.innerHTML = checks.map(([ok, t]) => `<li class="${ok ? "" : "miss"}">${esc(t)}</li>`).join("");
+  els.planChecks.classList.remove("hidden");
+  els.startBtn.disabled = false;
+}
+
+function setStatus(msg, isErr) {
+  els.status.textContent = msg;
+  els.status.classList.toggle("err", !!isErr);
+}
+
+function readFile(file) {
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = () => loadCase(String(r.result), file.name);
+  r.onerror = () => setStatus(`Couldn’t read ${file.name}.`, true);
+  r.readAsText(file);
+}
+
+els.pickBtn.addEventListener("click", () => els.fileIn.click());
+els.fileIn.addEventListener("change", e => { readFile(e.target.files[0]); e.target.value = ""; });
+els.exampleBtn.addEventListener("click", () => loadCase(TEMPLATE, "example-chest-pain.md"));
+
+const pasteBtn = $("pasteBtn"), pastePanel = $("pastePanel"), pasteIn = $("pasteIn");
+function showPaste(on) {
+  pastePanel.classList.toggle("hidden", !on);
+  pasteBtn.setAttribute("aria-expanded", String(on));
+  if (on) pasteIn.focus();
+}
+function loadPasted() {
+  const text = pasteIn.value;
+  if (!text.trim()) { setStatus("Paste the case Markdown into the box, then press Load.", true); pasteIn.focus(); return; }
+  if (loadCase(text, "pasted case")) { pasteIn.value = ""; showPaste(false); }
+}
+pasteBtn.addEventListener("click", () => showPaste(pastePanel.classList.contains("hidden")));
+$("pasteCancel").addEventListener("click", () => { pasteIn.value = ""; showPaste(false); });
+$("pasteLoad").addEventListener("click", loadPasted);
+pasteIn.addEventListener("keydown", e => {
+  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); loadPasted(); }
+  if (e.key === "Escape") showPaste(false);
+});
+["dragenter", "dragover"].forEach(ev => els.drop.addEventListener(ev, e => { e.preventDefault(); els.drop.classList.add("over"); }));
+["dragleave", "drop"].forEach(ev => els.drop.addEventListener(ev, e => { e.preventDefault(); els.drop.classList.remove("over"); }));
+els.drop.addEventListener("drop", e => readFile(e.dataTransfer.files[0]));
+document.addEventListener("dragover", e => e.preventDefault());
+document.addEventListener("drop", e => { e.preventDefault(); if (els.setup.classList.contains("hidden")) return; readFile(e.dataTransfer.files[0]); });
+
+try {
+  const saved = JSON.parse(localStorage.getItem("osce-last-case") || "null");
+  if (saved && saved.text) { loadCase(saved.text, saved.sourceName || "last case"); setStatus(`Reloaded last case (${saved.sourceName || "file"}).`); }
+} catch (e) {}
+
+/* ---------- bell (Web Audio, with <audio> fallback) ---------- */
+let actx = null;
+try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+function audio() {
+  if (!actx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    try { actx = new AC(); } catch (e) { return null; }
+  }
+  if (actx.state !== "running") actx.resume().catch(() => {});
+  return actx;
+}
+// Safari can leave a context silently broken (after sleep, output change, etc.),
+// so every click that needs sound replaces it with a new one.
+function freshAudio() {
+  stopKeepAlive();
+  if (actx) { try { actx.close(); } catch (e) {} actx = null; }
+  return audio();
+}
+let keepAlive = null;
+function startKeepAlive() {
+  if (!actx || keepAlive) return;
+  try {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = 40; g.gain.value = 0.00001; // inaudible; stops Safari idling the context
+    o.connect(g).connect(actx.destination); o.start();
+    keepAlive = { o, g };
+  } catch (e) {}
+}
+function stopKeepAlive() {
+  if (!keepAlive) return;
+  try { keepAlive.o.stop(); keepAlive.o.disconnect(); keepAlive.g.disconnect(); } catch (e) {}
+  keepAlive = null;
+}
+// Any tap or keypress revives a context the browser has suspended or interrupted.
+["pointerdown", "keydown", "touchend"].forEach(ev =>
+  document.addEventListener(ev, () => { if (actx && actx.state !== "running") actx.resume().catch(() => {}); }, { capture: true, passive: true })
+);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && actx && actx.state !== "running") actx.resume().catch(() => {});
+});
+const buses = new WeakMap();
+function busFor(ctx) {
+  let out = buses.get(ctx);
+  if (!out) {
+    out = ctx.createGain();
+    out.gain.value = 0.32;
+    out.connect(ctx.createDynamicsCompressor()).connect(ctx.destination);
+    buses.set(ctx, out);
+  }
+  return out;
+}
+function strike(ctx, t0, base) {
+  const out = busFor(ctx);
+  // inharmonic bell partials: hum, prime, tierce, quint, nominal, upper
+  const partials = [
+    [0.5, 0.55, 4.0], [1.0, 1.0, 3.2], [1.19, 0.45, 2.4], [1.5, 0.35, 2.0],
+    [2.0, 0.6, 1.7], [2.51, 0.25, 1.2], [2.66, 0.2, 1.1], [3.01, 0.16, 0.9], [4.07, 0.1, 0.6]
+  ];
+  partials.forEach(([ratio, amp, decay]) => {
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = base * ratio * (1 + (Math.random() - 0.5) * 0.002);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(amp, t0 + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + decay);
+    o.connect(g).connect(out);
+    o.onended = () => { try { o.disconnect(); g.disconnect(); } catch (e) {} };
+    o.start(t0);
+    o.stop(t0 + decay + 0.05);
+  });
+}
+function playStrikes(ctx, times) {
+  const t = ctx.currentTime + 0.03;
+  for (let i = 0; i < times; i++) strike(ctx, t + i * 0.85, 784);
+}
+
+// Pre-rendered copies played through <audio>, used when Web Audio is blocked.
+const fallbackEls = {};
+function toWavDataUri(buf) {
+  const d = buf.getChannelData(0), n = d.length, ab = new ArrayBuffer(44 + n * 2), v = new DataView(ab);
+  const w = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt ");
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, buf.sampleRate, true); v.setUint32(28, buf.sampleRate * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) { const s = Math.max(-1, Math.min(1, d[i])); v.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true); }
+  const bytes = new Uint8Array(ab); let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return "data:audio/wav;base64," + btoa(bin);
+}
+async function renderFallback(times) {
+  try {
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!OAC) return;
+    const sr = 22050;
+    const oc = new OAC(1, Math.ceil(sr * (0.03 + (times - 1) * 0.85 + 4.2)), sr);
+    playStrikes(oc, times);
+    const buf = await oc.startRendering();
+    const el = new Audio(toWavDataUri(buf));
+    el.preload = "auto";
+    fallbackEls[times] = el;
+  } catch (e) {}
+}
+renderFallback(1); renderFallback(2);
+function playFallback(times) {
+  const el = fallbackEls[times];
+  if (!el) return;
+  try { el.muted = false; el.currentTime = 0; el.play().catch(() => {}); } catch (e) {}
+}
+
+// Call from a click: unlocks both audio paths for later, timer-driven bells.
+function primeAudio(station) {
+  const ctx = freshAudio();
+  if (station) startKeepAlive();
+  if (ctx) {
+    try {
+      const b = ctx.createBuffer(1, 1, 22050), s = ctx.createBufferSource();
+      s.buffer = b; s.connect(ctx.destination); s.start(0);
+    } catch (e) {}
+  }
+  Object.values(fallbackEls).forEach(el => {
+    try { el.muted = true; el.play().then(() => { el.pause(); el.currentTime = 0; el.muted = false; }).catch(() => { el.muted = false; }); } catch (e) {}
+  });
+}
+
+function bell(times = 1) {
+  const ctx = audio();
+  if (!ctx) return playFallback(times);
+  if (ctx.state === "running") return playStrikes(ctx, times);
+  let done = false;
+  const giveUp = setTimeout(() => { if (!done) { done = true; playFallback(times); } }, 400);
+  ctx.resume().then(() => {
+    if (done) return;
+    done = true; clearTimeout(giveUp);
+    if (ctx.state === "running") playStrikes(ctx, times); else playFallback(times);
+  }).catch(() => { if (!done) { done = true; clearTimeout(giveUp); playFallback(times); } });
+}
+els.bellTest.addEventListener("click", () => { primeAudio(); bell(1); });
+
+/* ---------- timer ---------- */
+let phaseIdx = -1, endAt = 0, pausedLeft = null, tickId = null, wakeLock = null, warned = false, timerOnly = false;
+
+async function keepAwake(on) {
+  try {
+    if (on && "wakeLock" in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+    } else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) {}
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && phaseIdx >= 0 && phaseIdx < PHASES.length) keepAwake(true);
+});
+
+function fmt(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function setPhaseColor(color) {
+  const root = document.documentElement.style;
+  root.setProperty("--phase", `var(--${color})`);
+  root.setProperty("--phase-soft", `var(--${color}-soft)`);
+}
+
+function enterPhase(i) {
+  phaseIdx = i;
+  if (i >= PHASES.length) return finish();
+  const p = PHASES[i];
+  endAt = performance.now() + p.secs * 1000;
+  pausedLeft = null;
+  warned = false;
+  els.clock.classList.remove("paused");
+  els.pauseBtn.textContent = "Pause";
+  els.phaseName.textContent = p.name;
+  els.phaseNext.textContent = p.next;
+  setPhaseColor(p.color);
+  renderStage(p.id);
+  tick();
+  window.scrollTo({ top: 0 });
+}
+
+function tick() {
+  if (phaseIdx < 0 || phaseIdx >= PHASES.length) return;
+  const p = PHASES[phaseIdx];
+  const left = pausedLeft !== null ? pausedLeft : endAt - performance.now();
+  els.time.textContent = fmt(left);
+  els.barFill.style.width = `${Math.min(100, Math.max(0, (1 - left / (p.secs * 1000)) * 100))}%`;
+  document.title = `${fmt(left)} ${p.name}`;
+  if (p.warn && !warned && pausedLeft === null && left > 0 && left <= p.warn * 1000) {
+    warned = true;
+    bell(1);
+  }
+  if (pausedLeft === null && left <= 0) {
+    bell(2);
+    enterPhase(phaseIdx + 1);
+  }
+}
+
+function start(bare) {
+  timerOnly = bare === true;
+  if (!current && !timerOnly) return;
+  primeAudio(true); // fresh audio context on user gesture
+  keepAwake(true);
+  els.setup.classList.add("hidden");
+  els.run.classList.remove("hidden");
+  enterPhase(0);
+  clearInterval(tickId);
+  tickId = setInterval(tick, 200);
+}
+
+function finish() {
+  stopKeepAlive();
+  disarmEnd();
+  clearInterval(tickId);
+  phaseIdx = PHASES.length;
+  setPhaseColor("teal");
+  els.time.textContent = "0:00";
+  els.barFill.style.width = "100%";
+  els.phaseName.textContent = "Station finished";
+  els.phaseNext.textContent = "";
+  els.pauseBtn.classList.add("hidden");
+  els.skipBtn.classList.add("hidden");
+  els.resetBtn.textContent = "Back to setup";
+  document.title = "OSCE history station";
+  keepAwake(false);
+  renderStage("done");
+}
+
+function reset() {
+  stopKeepAlive();
+  clearInterval(tickId);
+  phaseIdx = -1;
+  pausedLeft = null;
+  keepAwake(false);
+  els.pauseBtn.classList.remove("hidden");
+  els.skipBtn.classList.remove("hidden");
+  els.resetBtn.textContent = "End station";
+  els.run.classList.add("hidden");
+  els.setup.classList.remove("hidden");
+  setPhaseColor("teal");
+  document.title = "OSCE history station";
+}
+
+const readyEl = $("ready");
+let readyBare = false;
+function showReady(bare) {
+  readyBare = bare === true;
+  if (!current && !readyBare) return;
+  readyEl.classList.remove("hidden");
+  $("readyGo").focus();
+}
+function hideReady() { readyEl.classList.add("hidden"); }
+$("readyGo").addEventListener("click", () => { hideReady(); start(readyBare); });
+$("readyCancel").addEventListener("click", () => { hideReady(); (readyBare ? $("timerOnlyBtn") : els.startBtn).focus(); });
+readyEl.addEventListener("keydown", e => { if (e.key === "Escape") $("readyCancel").click(); });
+els.startBtn.addEventListener("click", () => showReady(false));
+$("timerOnlyBtn").addEventListener("click", () => showReady(true));
+els.pauseBtn.addEventListener("click", () => {
+  if (pausedLeft === null) {
+    pausedLeft = Math.max(0, endAt - performance.now());
+    els.pauseBtn.textContent = "Resume";
+    els.clock.classList.add("paused");
+  } else {
+    endAt = performance.now() + pausedLeft;
+    pausedLeft = null;
+    els.pauseBtn.textContent = "Pause";
+    els.clock.classList.remove("paused");
+  }
+  tick();
+});
+els.skipBtn.addEventListener("click", () => {
+  if (phaseIdx >= 0 && phaseIdx < PHASES.length) enterPhase(phaseIdx + 1);
+});
+let endArmTimer = null;
+function disarmEnd() {
+  clearTimeout(endArmTimer);
+  endArmTimer = null;
+  els.resetBtn.classList.remove("armed");
+  els.resetBtn.textContent = phaseIdx >= PHASES.length ? "Back to setup" : "End station";
+}
+els.resetBtn.addEventListener("click", () => {
+  const running = phaseIdx >= 0 && phaseIdx < PHASES.length;
+  if (running && !endArmTimer) {
+    els.resetBtn.textContent = "Click again to end";
+    els.resetBtn.classList.add("armed");
+    endArmTimer = setTimeout(disarmEnd, 3000);
+    return;
+  }
+  disarmEnd();
+  reset();
+});
+document.addEventListener("keydown", e => {
+  if (els.run.classList.contains("hidden") || els.help.open) return;
+  if (e.code === "Space" && !/^(BUTTON|INPUT|TEXTAREA|SUMMARY)$/.test(document.activeElement.tagName)) {
+    e.preventDefault();
+    if (phaseIdx < PHASES.length) els.pauseBtn.click();
+  }
+});
+
+/* ---------- stage rendering ---------- */
+function stemBlock(big) {
+  if (!current.intro) return "";
+  return `<div class="stem-box ${big ? "reading-big" : ""}"><p class="lbl">Candidate instructions</p><p class="s">${esc(current.intro)}</p></div>`;
+}
+
+function caseBlock() {
+  const secs = current.sections;
+  if (!secs.length) return `<p>No sections in this case file.</p>`;
+  const nav = secs.map((s, i) => `<a href="#sec-${i}">${esc(s.title)}</a>`).join("");
+  const body = secs.map((s, i) =>
+    `<section class="sec ${i === 0 ? "lead" : ""}" id="sec-${i}"><h3>${esc(s.title)}</h3><div class="md">${md(s.md)}</div></section>`
+  ).join("");
+  return `<div class="case"><nav class="index" aria-label="Case sections">${nav}</nav><div class="sections">${body}</div></div>`;
+}
+
+function questionBlock() {
+  const q = current.question || "No examiner question in the case file.";
+  return `<div class="question-big"><p class="lbl">Examiner asks</p><p class="qq">${esc(q)}</p></div>`;
+}
+
+function answerBlock(open) {
+  if (!current.answer) return "";
+  return `<details class="answer" ${open ? "open" : ""}><summary>Model answer</summary><div class="md">${md(current.answer)}</div></details>`;
+}
+
+function renderStage(id) {
+  let html = "";
+  if (timerOnly) {
+    els.stage.innerHTML = id === "done"
+      ? `<div class="done-box"><div class="actions"><button class="btn primary" type="button" id="againBtn">Run timer again</button></div></div>`
+      : "";
+    if (id === "done") $("againBtn").addEventListener("click", () => { reset(); showReady(true); });
+    return;
+  }
+  if (id === "reading") {
+    html = stemBlock(true);
+  } else if (id === "history") {
+    html = stemBlock(false) + caseBlock();
+  } else if (id === "question") {
+    html = questionBlock() + `<div style="margin-top:26px">${answerBlock(false)}</div>`;
+  } else if (id === "done") {
+    html = `<div class="done-box">${questionBlock()}${answerBlock(true)}
+      <div class="actions"><button class="btn primary" type="button" id="againBtn">Run this case again</button>
+      <button class="btn" type="button" id="reviewBtn">Show case sections</button></div>
+      <div id="reviewArea"></div></div>`;
+  }
+  els.stage.innerHTML = html;
+  els.stage.querySelectorAll(".index a").forEach(a => a.addEventListener("click", e => {
+    e.preventDefault();
+    const t = document.querySelector(a.getAttribute("href"));
+    if (t) t.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  }));
+  if (id === "done") {
+    $("againBtn").addEventListener("click", () => { reset(); showReady(false); });
+    $("reviewBtn").addEventListener("click", e => {
+      $("reviewArea").innerHTML = stemBlock(false) + caseBlock();
+      e.currentTarget.remove();
+      $("reviewArea").querySelectorAll(".index a").forEach(a => a.addEventListener("click", ev => {
+        ev.preventDefault();
+        document.querySelector(a.getAttribute("href"))?.scrollIntoView();
+      }));
+    });
+  }
+}
+
+/* ---------- help dialog ---------- */
+els.helpBtn.addEventListener("click", () => els.help.showModal());
+els.helpClose.addEventListener("click", () => els.help.close());
+els.help.addEventListener("click", e => { if (e.target === els.help) els.help.close(); });
+document.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", async () => {
+  const text = $(b.dataset.copy).textContent;
+  try { await navigator.clipboard.writeText(text); }
+  catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch (_) {}
+    ta.remove();
+  }
+  const old = b.textContent; b.textContent = "Copied"; setTimeout(() => (b.textContent = old), 1400);
+}));
+})();
+</script>
+</body>
+</html>
