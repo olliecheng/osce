@@ -4,6 +4,7 @@
   "name": "osce",
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-01",
+  "routes": [{ "pattern": "osce.oyc.id.au", "custom_domain": true }],
   "assets": {
     // Directory is supplied by @cloudflare/vite-plugin at build time.
     "not_found_handling": "single-page-application",
