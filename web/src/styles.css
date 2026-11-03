@@ -506,6 +506,9 @@ header.top .wrap {
 .answer .md {
   margin-top: 10px;
 }
+.preread[open] summary {
+  margin-bottom: 18px;
+}
 
 .case {
   display: grid;

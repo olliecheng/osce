@@ -465,7 +465,9 @@ export function mountHost(onJoin: (code: string) => void) {
       return;
     }
     if (id === "reading") {
-      html = stemBlock(true);
+      html =
+        stemBlock(true) +
+        `<details class="answer preread"><summary>Role-player instructions</summary>${caseBlock()}</details>`;
     } else if (id === "history") {
       html = stemBlock(false) + caseBlock();
     } else if (id === "question") {
