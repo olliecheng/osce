@@ -980,3 +980,17 @@ body.in-station header.top .btn:hover{background:var(--line)}
 .show-timer input{width:1.1rem;height:1.1rem;accent-color:var(--primary)}
 body.in-station .show-timer{color:var(--muted)}
 .show-timer+.room-chip{margin-left:0}
+
+/* compact one-row join box */
+.join-box{padding:14px 20px;gap:4px;justify-items:stretch}
+.join-line{display:flex;align-items:center;gap:12px;width:100%}
+.join-line h2{margin-right:auto}
+.join-line .code-input{font-size:1.1rem;width:5.5ch;padding:5px 5px 5px calc(5px + .3em);letter-spacing:.3em}
+.join-line .btn{padding:6px 14px;font-size:1.1rem;line-height:1.2}
+.join-box .status{margin:0;font-size:.9rem}
+.join-box .status:empty{display:none}
+
+/* display waiting room: Leave sits under the card, right-aligned */
+.dcol{display:grid;gap:10px;width:fit-content;max-width:100%}
+.leave-btn{justify-self:end;appearance:none;background:transparent;border:2px solid transparent;color:var(--red);font:inherit;font-weight:600;padding:6px 12px;cursor:pointer}
+.leave-btn:hover{background:var(--red-soft);border-color:var(--red)}

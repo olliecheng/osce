@@ -130,11 +130,21 @@ export function mountDisplay() {
     clock.classList.add("hidden");
     document.body.classList.remove("in-station");
   }
-  function center(...children: HTMLElement[]) {
+  /** A centred card; with `withLeave`, a red text "Leave" button sits under it, aligned to its right edge. */
+  function center(children: HTMLElement[], withLeave = false) {
     const card = h("div", "card");
     card.append(...children);
+    const col = h("div", "dcol");
+    col.append(card);
+    if (withLeave) {
+      const leave = h("button", "leave-btn", "Leave");
+      leave.id = "leaveBtn";
+      leave.type = "button";
+      leave.addEventListener("click", () => leaveRoom());
+      col.append(leave);
+    }
     const wrap = h("div", "dcenter");
-    wrap.append(card);
+    wrap.append(col);
     stage.replaceChildren(wrap);
   }
 
@@ -170,14 +180,9 @@ export function mountDisplay() {
     const form = h("div", "row");
     form.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center";
     form.append(input, btn);
-    center(
-      title,
-      h("p", "dmsg sub", "Enter the code shown on the host’s screen."),
-      form,
-      err,
-      h("a", "btn quiet", "Back"),
-    );
-    (stage.querySelector("a.btn") as HTMLAnchorElement).href = "/";
+    const back = h("a", "btn quiet", "Back");
+    back.href = "/";
+    center([title, h("p", "dmsg sub", "Enter the code shown on the host’s screen."), form, err, back]);
     const go = () => {
       const c = normalizeCode(input.value);
       if (!CODE_RE.test(c)) {
@@ -194,21 +199,24 @@ export function mountDisplay() {
     input.focus();
   }
 
-  function showLobby() {
+  function showLobby(noHost = false) {
     stopClock();
     black.classList.add("hidden");
-    const msg = h("p", "dmsg", `Joined ${code}. Waiting for the station to start.`);
+    const msg = h(
+      "p",
+      "dmsg",
+      noHost ? "No host found." : `Joined ${code}. Waiting for the station to start.`,
+    );
     msg.id = "lobbyMsg";
-    const leave = h("button", "btn quiet", "Leave");
-    leave.type = "button";
-    leave.addEventListener("click", () => leaveRoom());
-    center(msg, leave);
+    const items = [msg];
+    if (noHost) items.push(h("p", "dmsg sub", `Looking for room ${code}…`));
+    center(items, true);
   }
 
   function showDone() {
     stopClock();
     black.classList.add("hidden");
-    center(h("p", "dmsg", "Station finished. Waiting for the next one."));
+    center([h("p", "dmsg", "Station finished. Waiting for the next one.")], true);
   }
 
   let snap: DisplaySnapshot | null = null;
@@ -252,15 +260,28 @@ export function mountDisplay() {
   }
 
   /* ---------- connection ---------- */
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** Enter the waiting room straight away, whether or not a host exists yet. */
   function join(c: string) {
     code = c;
-    primeAudio(true); // the Join click unlocks audio; keep-alive runs while joined
+    primeAudio(true); // keep-alive runs while joined; if the browser blocks audio, "Tap to enable sound" appears
     keepAwake(true);
+    joined = true;
+    $("chipCode").textContent = c;
+    $("roomChip").classList.remove("hidden");
+    $("showTimerWrap").classList.remove("hidden");
+    showLobby();
+    connect();
+  }
+
+  function connect() {
+    clearTimeout(retryTimer);
     conn?.close();
     linkLost = false;
     hostConnected = true;
     conn = new Connection({
-      url: () => wsUrl(`/api/rooms/${c}/ws?role=display`),
+      url: () => wsUrl(`/api/rooms/${code}/ws?role=display`),
       onMessage: (data) => {
         const m = parseServerMsg(data) as ServerMsg | null;
         if (m) onServer(m);
@@ -269,26 +290,29 @@ export function mountDisplay() {
         linkLost = false;
         updateBanner();
       },
-      onClose: ({ code: closeCode, willRetry }) => {
+      onClose: ({ willRetry }) => {
         if (willRetry) {
           linkLost = true;
           updateBanner();
-          return;
         }
-        if (closeCode === 4004) endSession("This station was closed by the host.");
-        // 4001 / 4003 already surfaced through the error message that precedes the close.
       },
     });
     conn.connect();
   }
 
-  function endSession(message: string) {
+  /** No room for this code (yet, or any more): wait for a host and keep looking. */
+  function noHost() {
     conn?.close();
     conn = null;
-    showJoin(message, code);
+    hostConnected = true; // no "host disconnected" banner on top of "No host found."
+    updateBanner();
+    showLobby(true);
+    clearTimeout(retryTimer);
+    retryTimer = setTimeout(connect, 4000);
   }
 
   function leaveRoom() {
+    clearTimeout(retryTimer);
     conn?.close();
     conn = null;
     showJoin("", "");
@@ -297,10 +321,6 @@ export function mountDisplay() {
   function onServer(m: ServerMsg) {
     switch (m.type) {
       case "welcome":
-        joined = true;
-        $("chipCode").textContent = m.code;
-        $("roomChip").classList.remove("hidden");
-        $("showTimerWrap").classList.remove("hidden");
         hostConnected = m.hostConnected;
         updateBanner();
         showLobby();
@@ -313,10 +333,8 @@ export function mountDisplay() {
         updateBanner();
         break;
       case "error":
-        endSession("No station with that code.");
-        break;
       case "closed":
-        endSession("This station was closed by the host.");
+        noHost();
         break;
       case "pong":
         break;
@@ -328,5 +346,6 @@ export function mountDisplay() {
   setInterval(() => enableSound.classList.toggle("hidden", !joined || audioRunning()), 1000);
 
   const prefill = normalizeCode(new URLSearchParams(location.search).get("code") ?? "");
-  showJoin("", CODE_RE.test(prefill) ? prefill : "");
+  if (CODE_RE.test(prefill)) join(prefill);
+  else showJoin();
 }

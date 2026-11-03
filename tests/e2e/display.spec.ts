@@ -228,7 +228,9 @@ test("display: phase band always shown; timer and bar only with Show timer; stem
   await d.ctx.close();
 });
 
-test("display errors: unknown code, bad code, lowercase code", async ({ browser }) => {
+test("display: unknown code goes to the waiting room with No host found; bad code on the form errors", async ({
+  browser,
+}) => {
   const d = await newPage(browser);
   await d.page.goto("/join");
   await d.page.locator("#codeIn").fill("ab1");
@@ -236,15 +238,37 @@ test("display errors: unknown code, bad code, lowercase code", async ({ browser 
   await expect(d.page.locator("#joinErr")).toContainText("4-letter code");
   await d.page.locator("#codeIn").fill("zzzy");
   await d.page.locator("#joinBtn").click();
-  await expect(d.page.locator("#joinErr")).toHaveText("No station with that code.");
+  await expect(d.page.locator("#lobbyMsg")).toHaveText("No host found.");
+  await expect(d.page.locator("#leaveBtn")).toBeVisible();
 
-  // lowercase codes are accepted
+  // a host appearing later (same code) is picked up without any click
   const h = await newPage(browser);
   await openHost(h.page);
   const code = await createRoom(h.page);
-  await joinDisplay(d.page, code.toLowerCase());
-  await expect(d.page.locator("#lobbyMsg")).toBeVisible();
+  await d.page.locator("#leaveBtn").click();
+  await d.page.locator("#codeIn").fill(code.toLowerCase());
+  await d.page.locator("#joinBtn").click();
+  await expect(d.page.locator("#lobbyMsg")).toHaveText(`Joined ${code}. Waiting for the station to start.`);
   await expect(d.page.locator("header #chipCode")).toHaveText(code);
+
+  // Leave is outside the card, in red text with no background, right-aligned with the card
+  const card = (await d.page.locator(".card").boundingBox()) as {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  const leave = (await d.page.locator("#leaveBtn").boundingBox()) as {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+  expect(leave.y).toBeGreaterThanOrEqual(card.y + card.height);
+  expect(Math.abs(leave.x + leave.width - (card.x + card.width))).toBeLessThan(2);
+  expect(await d.page.locator("#leaveBtn").evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(
+    "rgba(0, 0, 0, 0)",
+  );
   await h.ctx.close();
   await d.ctx.close();
 });

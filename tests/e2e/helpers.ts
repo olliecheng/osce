@@ -75,10 +75,9 @@ export async function createRoom(host: Page): Promise<string> {
   return (await code.textContent()) as string;
 }
 
+/** Opening /join?code=… goes straight to the waiting room. */
 export async function joinDisplay(page: Page, code: string) {
   await page.goto(`/join?code=${code}`);
-  await expect(page.locator("#codeIn")).toHaveValue(code.toUpperCase());
-  await page.locator("#joinBtn").click();
 }
 
 /** Advance a page's fake clock in small steps, letting WebSocket traffic land between steps. */

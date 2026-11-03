@@ -22,12 +22,11 @@
   <!-- SETUP -->
   <main id="setup" class="wrap setup">
     <div class="stack">
-    <section class="drop" id="joinBox" aria-labelledby="joinTitle">
-      <h2 id="joinTitle">Join</h2>
-      <p>Show a candidate’s screen on this device: enter the room code from the host.</p>
-      <form class="row" id="joinForm">
+    <section class="drop join-box" id="joinBox" aria-labelledby="joinTitle">
+      <form class="join-line" id="joinForm">
+        <h2 id="joinTitle">Join</h2>
         <input class="code-input" id="joinCode" maxlength="8" autocomplete="off" spellcheck="false" autocapitalize="characters" placeholder="ABCD" aria-label="4-letter room code">
-        <button class="btn primary" id="joinGo" type="submit">Join</button>
+        <button class="btn primary" id="joinGo" type="submit" aria-label="Join" title="Join">→</button>
       </form>
       <p class="status err" id="joinBoxErr" role="alert"></p>
     </section>
