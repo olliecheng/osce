@@ -69,10 +69,25 @@ describe("snapshot allow-list", () => {
     const review = { question: "Q?", answer: "A", sections: [{ title: "x", md: "y" }] };
     expect(sanitizeSnapshot({ ...snap({ phase: "history" }), review })?.review).toBeNull();
     expect(sanitizeSnapshot({ ...snap({ phase: "done", timerOnly: true }), review })?.review).toBeNull();
-    expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review })?.review).toEqual(review);
+    const out = { ...review, checked: [] };
+    expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review })?.review).toEqual(out);
     expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review: { ...review, extra: 1 } })?.review).toEqual(
-      review,
+      out,
     );
+  });
+  it("keeps only well-formed checked keys, and only in the done phase", () => {
+    const review = {
+      question: "Q?",
+      answer: "A",
+      sections: [{ title: "x", md: "- y" }],
+      checked: ["0:0", "1:12", "x", 5, "0:", "123:1", null],
+    };
+    expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review })?.review?.checked).toEqual([
+      "0:0",
+      "1:12",
+    ]);
+    expect(sanitizeSnapshot({ ...snap({ phase: "history" }), review })?.review).toBeNull();
+    expect(JSON.stringify(sanitizeSnapshot({ ...snap({ phase: "history" }), review }))).not.toContain("0:0");
   });
   it("parseHostMsg drops invalid and oversized messages", () => {
     expect(parseHostMsg("{nope")).toBeNull();

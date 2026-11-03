@@ -2,6 +2,7 @@ import { normalizeCode } from "../../../worker/protocol";
 import { bindSmoothBar, fillBar } from "../bar";
 import { bell, primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
+import { applyChecked, indexListItems, sectionIndex, wireChecklist } from "../checklist";
 import { downloadCase } from "../download";
 import { esc, md } from "../markdown";
 import type { HostView } from "../snapshot";
@@ -43,6 +44,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
 
   /* ---------- case state ---------- */
   let current: CaseData | null = null;
+  const checked = new Set<string>(); // bullets the assessor marked off; sent to viewers only at "done"
   const resetCaseBtn = $<HTMLButtonElement>("resetCaseBtn");
   resetCaseBtn.addEventListener("click", clearCase);
 
@@ -56,6 +58,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
       return false;
     }
     current = c;
+    checked.clear();
     try {
       localStorage.setItem("osce-last-case", JSON.stringify({ text, sourceName }));
     } catch {}
@@ -87,6 +90,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
 
   function clearCase() {
     current = null;
+    checked.clear();
     try {
       localStorage.removeItem("osce-last-case");
     } catch {}
@@ -223,7 +227,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
 
   /* ---------- room (second screen) ---------- */
   function view(): Omit<HostView, "seq"> {
-    const base = { sessionId, timerOnly: timer.timerOnly, case: current };
+    const base = { sessionId, timerOnly: timer.timerOnly, case: current, checked: [...checked] };
     if (readyOpen)
       return {
         ...base,
@@ -347,6 +351,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     readyBare = bare === true;
     if (!current && !readyBare) return;
     sessionId = crypto.randomUUID();
+    checked.clear();
     readyOpen = true;
     readyEl.classList.remove("hidden");
     $("readyGo").focus();
@@ -459,8 +464,16 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
       area.innerHTML = stemBlock(false) + caseBlock();
       btn.remove();
       wireIndexLinks(area);
+      decorateCase(area);
     });
   }
+
+  /** Key every bullet and restore its marked state after the case is (re)rendered. */
+  function decorateCase(root: ParentNode) {
+    indexListItems(root, sectionIndex);
+    applyChecked(root, checked);
+  }
+  wireChecklist(els.stage, checked, () => !timer.finished);
 
   function renderStage(id: string) {
     let html = "";
@@ -483,7 +496,9 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
       html = `<div class="done-box">${questionBlock()}${answerStatic()}${stemBlock(false)}${caseBlock()}<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="downloadMdBtn">Download .md</button></div></div>`;
     }
     els.stage.innerHTML = html;
+    els.stage.classList.toggle("markable", id !== "done");
     wireIndexLinks(els.stage);
+    decorateCase(els.stage);
     if (id === "done" && current)
       $("downloadMdBtn").addEventListener("click", () => downloadCase(current as CaseData));
     else if (id === "done") $("downloadMdBtn").remove();

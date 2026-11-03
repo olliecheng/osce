@@ -34,8 +34,11 @@ export type DisplayReview = {
   question: string | null;
   answer: string | null;
   sections: { title: string; md: string }[];
+  /** Bullets the assessor marked off, as "<section>:<item>" keys (see web/src/checklist.ts). */
+  checked: string[];
 };
 
+const CHECK_KEY_RE = /^\d{1,2}:\d{1,3}$/;
 const REVIEW_MAX_JSON = 48 * 1024; // keep the whole snapshot under MAX_MESSAGE_BYTES
 
 // host -> server
@@ -82,7 +85,12 @@ function sanitizeReview(v: unknown): DisplayReview | null {
     if (sec.title.length > 200 || sec.md.length > 20000) return null;
     sections.push({ title: sec.title, md: sec.md });
   }
-  const out = { question, answer, sections };
+  const checked: string[] = [];
+  if (Array.isArray(v.checked)) {
+    for (const k of v.checked.slice(0, 1000))
+      if (typeof k === "string" && CHECK_KEY_RE.test(k)) checked.push(k);
+  }
+  const out = { question, answer, sections, checked };
   return JSON.stringify(out).length <= REVIEW_MAX_JSON ? out : null;
 }
 

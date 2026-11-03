@@ -351,6 +351,36 @@ test("host and viewer can download the case as .md from the finished screen", as
   await d.ctx.close();
 });
 
+test("assessor marks off bullets; host and viewer see them grayed at the end", async ({ browser }) => {
+  const h = await newPage(browser);
+  const d = await newPage(browser);
+  await openHost(h.page);
+  const code = await createRoom(h.page);
+  await joinDisplay(d.page, code);
+  await expect(d.page.locator("#lobbyMsg")).toBeVisible();
+  await startStation(h.page);
+  await h.page.locator("#skipBtn").click(); // history: the case is on screen
+  const first = h.page.locator('#stage li[data-li="0:0"]');
+  const second = h.page.locator('#stage li[data-li="0:1"]');
+  await first.click();
+  await expect(first).toHaveClass(/done/);
+  await first.click();
+  await expect(first).not.toHaveClass(/done/); // click again un-grays
+  await first.click();
+  await second.click();
+  await second.click();
+  await expect(d.page.locator("li.done")).toHaveCount(0); // viewers see nothing while running
+  for (let i = 0; i < 2; i++) await h.page.locator("#skipBtn").click();
+  await expect(d.page.locator("#dPhaseName")).toHaveText("Station finished");
+  for (const page of [h.page, d.page]) {
+    await expect(page.locator('li[data-li="0:0"]').first()).toHaveClass(/done/);
+    await expect(page.locator('li[data-li="0:1"]').first()).not.toHaveClass(/done/);
+    await expect(page.locator("li.done")).toHaveCount(1);
+  }
+  await h.ctx.close();
+  await d.ctx.close();
+});
+
 test("clicking the room code makes a new room; viewers of the old one are told", async ({ browser }) => {
   const h = await newPage(browser);
   const d = await newPage(browser);

@@ -10,6 +10,8 @@ export type HostView = {
   paused: boolean;
   timerOnly: boolean;
   case: CaseData | null;
+  /** Bullets marked off by the assessor. Only ever read at `done`. */
+  checked?: readonly string[];
 };
 
 /**
@@ -29,16 +31,17 @@ export function buildSnapshot(v: HostView): DisplaySnapshot {
     timerOnly: v.timerOnly,
     title: hasCase ? v.case?.title || null : null,
     stem: hasCase ? v.case?.intro || null : null,
-    review: hasCase && v.phase === "done" ? buildReview(v.case as CaseData) : null,
+    review: hasCase && v.phase === "done" ? buildReview(v.case as CaseData, v.checked ?? []) : null,
   });
   if (!out) throw new Error("invalid snapshot");
   return out;
 }
 
-function buildReview(c: CaseData) {
+function buildReview(c: CaseData, checked: readonly string[]) {
   return {
     question: c.question || null,
     answer: c.answer || null,
     sections: c.sections.map((s) => ({ title: s.title, md: s.md })),
+    checked: [...checked],
   };
 }

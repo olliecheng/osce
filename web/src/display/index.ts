@@ -1,6 +1,7 @@
 import { type DisplaySnapshot, parseServerMsg, type ServerMsg } from "../../../worker/protocol";
 import { bindSmoothBar, fillBar } from "../bar";
 import { audioRunning, bell, primeAudio, stopKeepAlive, testBell } from "../bell";
+import { applyChecked, indexListItems, sectionIndex } from "../checklist";
 import { downloadCase } from "../download";
 import { mdSafe } from "../markdown";
 import { Connection, wsUrl } from "../sync";
@@ -232,6 +233,9 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
       wrap.append(nav, secs);
       box.append(wrap);
     }
+    const checkedSet = new Set(r.checked);
+    indexListItems(box, sectionIndex);
+    applyChecked(box, checkedSet);
     const leave = h("button", "leave-btn", "Leave");
     leave.id = "leaveBtn";
     leave.type = "button";

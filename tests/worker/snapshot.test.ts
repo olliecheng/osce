@@ -43,6 +43,16 @@ describe("buildSnapshot privacy allow-list", () => {
     expect(done.review?.question).toBe(c?.question);
     expect(done.review?.sections.length).toBe(c?.sections.length);
     expect(buildSnapshot({ ...base, phase: "done", timerOnly: true, case: c }).review).toBeNull();
+    const marked = buildSnapshot({
+      ...base,
+      phase: "done",
+      timerOnly: false,
+      case: c,
+      checked: ["0:1", "1:0"],
+    });
+    expect(marked.review?.checked).toEqual(["0:1", "1:0"]);
+    const running = buildSnapshot({ ...base, phase: "history", timerOnly: false, case: c, checked: ["0:1"] });
+    expect(JSON.stringify(running)).not.toContain("0:1");
     expect(buildSnapshot({ ...base, phase: "question", timerOnly: false, case: c }).review).toBeNull();
   });
   it("sends no stem in timer-only mode or without a case", () => {
