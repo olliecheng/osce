@@ -1,4 +1,5 @@
 import { type DisplaySnapshot, parseServerMsg, type ServerMsg } from "../../../worker/protocol";
+import { bindSmoothBar } from "../bar";
 import { audioRunning, bell, primeAudio, stopKeepAlive, testBell } from "../bell";
 import { Connection, wsUrl } from "../sync";
 import { fmt, PHASES, type PhaseColor, Timer } from "../timer";
@@ -28,6 +29,7 @@ export function mountDisplay(onLeave: () => void) {
   const enableSound = $("dEnableSound");
 
   const timer = new Timer();
+  bindSmoothBar($("dBarFill"), timer);
   let conn: Connection | null = null;
   let code = "";
   let joined = false;
@@ -76,7 +78,6 @@ export function mountDisplay(onLeave: () => void) {
     const p = timer.phase;
     if (!p) return;
     $("dTime").textContent = fmt(leftMs);
-    $("dBarFill").style.width = `${Math.min(100, Math.max(0, (1 - leftMs / (p.secs * 1000)) * 100))}%`;
     clock.classList.toggle("paused", timer.paused);
   });
   timer.on("phase", ({ phase }) => {

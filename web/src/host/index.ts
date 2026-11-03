@@ -1,4 +1,5 @@
 import { normalizeCode } from "../../../worker/protocol";
+import { bindSmoothBar, fillBar } from "../bar";
 import { bell, primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
 import { esc, md } from "../markdown";
@@ -189,6 +190,7 @@ export function mountHost(onJoin: (code: string) => void) {
 
   /* ---------- timer ---------- */
   const timer = new Timer();
+  bindSmoothBar(els.barFill, timer);
   let tickId: ReturnType<typeof setInterval> | undefined;
   let wakeLock: WakeLockSentinel | null = null;
   let sessionId = crypto.randomUUID();
@@ -260,7 +262,6 @@ export function mountHost(onJoin: (code: string) => void) {
     const p = timer.phase;
     if (!p) return;
     els.time.textContent = fmt(leftMs);
-    els.barFill.style.width = `${Math.min(100, Math.max(0, (1 - leftMs / (p.secs * 1000)) * 100))}%`;
     document.title = `${fmt(leftMs)} ${p.name}`;
   });
   timer.on("phase", ({ phase }) => {
@@ -306,7 +307,7 @@ export function mountHost(onJoin: (code: string) => void) {
     clearInterval(tickId);
     setPhaseColor("teal");
     els.time.textContent = "0:00";
-    els.barFill.style.width = "100%";
+    fillBar(els.barFill);
     els.phaseName.textContent = "Station finished";
     els.phaseNext.textContent = "";
     els.pauseBtn.classList.add("hidden");
