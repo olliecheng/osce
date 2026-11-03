@@ -933,3 +933,9 @@ a.btn {
     transition: none;
   }
 }
+
+.hnav{display:flex;gap:8px;margin-right:auto}
+.hnav .btn[aria-current="page"]{background:var(--teal);border-color:var(--teal);color:#fff}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .hnav .btn[aria-current="page"]{color:#0D1A18}}
+:root[data-theme="dark"] .hnav .btn[aria-current="page"]{color:#0D1A18}
+.room-chip .c{font-size:1.15rem}

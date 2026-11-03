@@ -143,6 +143,7 @@ export function mountDisplay() {
     black.classList.add("hidden");
     enableSound.classList.add("hidden");
     joined = false;
+    $("roomChip").classList.add("hidden");
     linkLost = false;
     updateBanner();
     document.title = TITLE;
@@ -286,6 +287,8 @@ export function mountDisplay() {
     switch (m.type) {
       case "welcome":
         joined = true;
+        $("chipCode").textContent = m.code;
+        $("roomChip").classList.remove("hidden");
         hostConnected = m.hostConnected;
         updateBanner();
         showLobby();
@@ -298,11 +301,7 @@ export function mountDisplay() {
         updateBanner();
         break;
       case "error":
-        if (m.code === "in_progress") {
-          endSession("That station is in progress; join between stations.");
-        } else {
-          endSession("No station with that code.");
-        }
+        endSession("No station with that code.");
         break;
       case "closed":
         endSession("This station was closed by the host.");
@@ -313,7 +312,6 @@ export function mountDisplay() {
   }
 
   /* ---------- sound ---------- */
-  $("dTestBell").addEventListener("click", testBell);
   enableSound.addEventListener("click", () => primeAudio(true));
   setInterval(() => enableSound.classList.toggle("hidden", !joined || audioRunning()), 1000);
 

@@ -94,17 +94,6 @@ describe("room service", () => {
     await until(() => h.msgs.some((m) => m.type === "welcome" && m.code === code));
   });
 
-  it("host sees live display counts", async () => {
-    const { code, hostToken } = await createRoomHttp();
-    const h = await host(code, hostToken);
-    const d1 = await display(code);
-    await until(() => h.msgs.some((m) => m.type === "displays" && m.count === 1));
-    await display(code);
-    await until(() => h.msgs.some((m) => m.type === "displays" && m.count === 2));
-    d1.ws.close(1000);
-    await until(() => h.msgs.at(-1)?.type === "displays" && h.msgs.at(-1).count === 1);
-  });
-
   it("display with no room gets no_room and 4003", async () => {
     const d = await display("ZZZZ");
     await until(() => d.closed);
@@ -112,15 +101,15 @@ describe("room service", () => {
     expect(d.closed?.code).toBe(CLOSE.NO_ROOM);
   });
 
-  it("display joining while running gets in_progress and 4001", async () => {
+  it("display can join while a station is running and gets the current snapshot", async () => {
     const { code, hostToken } = await createRoomHttp();
     const h = await host(code, hostToken);
-    h.send({ type: "snapshot", snapshot: snap({ status: "running", phase: "ready" }) });
+    h.send({ type: "snapshot", snapshot: snap({ status: "running", phase: "history", seq: 7 }) });
     await new Promise((r) => setTimeout(r, 50));
     const d = await display(code);
-    await until(() => d.closed);
-    expect(d.msgs[0]).toEqual({ type: "error", code: "in_progress" });
-    expect(d.closed?.code).toBe(CLOSE.IN_PROGRESS);
+    await until(() => d.msgs.some((m) => m.type === "snapshot" && m.snapshot.seq === 7));
+    expect(d.msgs[0]).toMatchObject({ type: "welcome", status: "running" });
+    expect(d.closed).toBeNull();
   });
 
   it("displays stay connected across running -> lobby and receive snapshots", async () => {
@@ -136,7 +125,6 @@ describe("room service", () => {
     });
     await until(() => d.msgs.some((m) => m.type === "snapshot" && m.snapshot.seq === 2));
     expect(d.closed).toBeNull();
-    // and a new display can join again now that it is back in the lobby
     const d2 = await display(code);
     await until(() => d2.msgs.some((m) => m.type === "welcome"));
     expect(d2.closed).toBeNull();

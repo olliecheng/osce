@@ -8,14 +8,13 @@ type Saved = { code: string; token: string };
 
 export type RoomUi = {
   code: string | null;
-  displays: number;
   connected: boolean; // our socket to the server is open
   notice: string; // e.g. "Room expired"
 };
 
 /** Host side of the room: creates/reclaims a room, relays snapshots, tracks display count. */
 export class HostRoom {
-  ui: RoomUi = { code: null, displays: 0, connected: false, notice: "" };
+  ui: RoomUi = { code: null, connected: false, notice: "" };
   private conn: Connection | null = null;
   private seq = 0;
   private pushQueued = false;
@@ -36,9 +35,10 @@ export class HostRoom {
   }
 
   /** Reclaim the room kept in sessionStorage after a page refresh. */
-  reclaim() {
+  reclaim(): boolean {
     const s = this.saved();
     if (s) this.attach(s);
+    return s !== null;
   }
 
   async create(): Promise<void> {
@@ -53,14 +53,14 @@ export class HostRoom {
       } catch {}
       this.attach(s);
     } catch {
-      this.ui.notice = "Couldn’t create a room. Check your connection and try again.";
+      this.ui.notice = "Couldn’t create a room.";
       this.onChange();
     }
   }
 
   private attach(s: Saved) {
     this.conn?.close();
-    this.ui = { code: s.code, displays: 0, connected: false, notice: "" };
+    this.ui = { code: s.code, connected: false, notice: "" };
     this.conn = new Connection({
       url: () => wsUrl(`/api/rooms/${s.code}/ws?role=host&token=${s.token}`),
       onOpen: () => {
@@ -71,22 +71,13 @@ export class HostRoom {
       onMessage: (data) => {
         const m = parseServerMsg(data) as ServerToHost | null;
         if (!m) return;
-        if (m.type === "welcome") this.ui.displays = m.displays;
-        else if (m.type === "displays") this.ui.displays = m.count;
-        else if (m.type === "replaced") return this.drop("This room was taken over by another tab.");
-        else if (m.type === "error") return this.drop("The room expired. Create a new one.");
-        else return;
-        this.onChange();
+        // The room is gone or taken over: start a fresh one.
+        if (m.type === "replaced" || m.type === "error") this.drop();
       },
-      onClose: ({ code, willRetry }) => {
+      onClose: ({ willRetry }) => {
         this.ui.connected = false;
         if (!willRetry) {
-          // 4003: the room no longer exists. 4002: another tab took this room over.
-          this.drop(
-            code === 4002
-              ? "This room was taken over by another tab."
-              : "The room expired. Create a new one.",
-          );
+          this.drop(); // 4002 (taken over) or 4003 (room gone): start a fresh room
           return;
         }
         this.onChange();
@@ -99,7 +90,8 @@ export class HostRoom {
     this.onChange();
   }
 
-  private drop(notice: string) {
+  /** The current room is unusable: forget it and create a new one. */
+  private drop() {
     this.conn?.close(); // stop reconnecting
     this.conn = null;
     try {
@@ -107,15 +99,9 @@ export class HostRoom {
     } catch {}
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
-    this.ui = { code: null, displays: 0, connected: false, notice };
+    this.ui = { code: null, connected: false, notice: "" };
     this.onChange();
-  }
-
-  /** Disconnect and close the room; displays are told immediately. */
-  close() {
-    this.conn?.send({ type: "close" });
-    this.conn?.close();
-    this.drop("");
+    void this.create();
   }
 
   get active(): boolean {

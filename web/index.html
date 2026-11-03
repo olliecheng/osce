@@ -8,34 +8,20 @@
 </head>
 <body>
 
-<!-- LANDING (/) -->
-<div id="landing" class="hidden">
-  <header class="top"><div class="wrap"><div class="brand">OSCE history station</div></div></header>
-  <main class="wrap landing">
-    <section class="card">
-      <h2>Run station</h2>
-      <p>Load a case and run the timed station. Use this on the role-player’s device.</p>
-      <a class="btn primary big" id="runLink" href="/host">Run station</a>
-    </section>
-    <section class="card">
-      <h2>Join as display</h2>
-      <p>Show the candidate’s screen: the stem, and a timer that appears on hover.</p>
-      <a class="btn big" id="joinLink" href="/join">Join as display</a>
-    </section>
-  </main>
-</div>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">OSCE Simulation Platform</div>
+    <nav class="hnav" aria-label="Mode">
+      <a class="btn" id="navHost" href="/host">Host</a>
+      <a class="btn" id="navJoin" href="/join">Join</a>
+    </nav>
+    <div class="room-chip hidden" id="roomChip" aria-live="polite"><span>Room</span><span class="c" id="chipCode"></span><span id="chipNote"></span><button class="btn quiet hidden" id="roomRetry" type="button">Retry</button></div>
+    <button class="btn quiet" id="bellTest" type="button">Test bell</button>
+  </div>
+</header>
 
 <!-- HOST (/host) -->
 <div id="hostApp" class="hidden">
-  <header class="top">
-    <div class="wrap">
-      <button class="btn help-btn" id="helpBtn" type="button"><span class="q" aria-hidden="true">?</span>How to write a case</button>
-      <div class="brand">OSCE history station</div>
-      <div class="room-chip hidden" id="roomChip" aria-live="polite"><span>Room</span><span class="c" id="chipCode"></span><span id="chipCount"></span><span id="chipNote"></span></div>
-      <button class="btn quiet" id="bellTest" type="button">Test bell</button>
-    </div>
-  </header>
-  
   <!-- SETUP -->
   <main id="setup" class="wrap setup">
     <section class="drop" id="drop">
@@ -47,6 +33,7 @@
         <button class="btn quiet" id="exampleBtn" type="button">Load example case</button>
         <input type="file" id="fileIn" accept=".md,.markdown,.txt,text/markdown,text/plain" class="hidden">
       </div>
+      <button class="btn help-btn" id="helpBtn" type="button"><span class="q" aria-hidden="true">?</span>How to write a case</button>
       <div class="paste hidden" id="pastePanel">
         <label for="pasteIn">Paste the case Markdown, including the front matter</label>
         <textarea id="pasteIn" spellcheck="false" autocomplete="off" placeholder="---&#10;intro: &quot;...&quot;&#10;question: &quot;...&quot;&#10;---&#10;&#10;## Introduction&#10;..."></textarea>
@@ -70,17 +57,6 @@
       <div class="actions">
         <button class="btn primary big" id="startBtn" type="button" disabled>Start station</button>
         <button class="btn big" id="timerOnlyBtn" type="button">Run timer only</button>
-      </div>
-      <div class="room" id="roomArea">
-        <h3>Second screen</h3>
-        <p class="hint" id="roomHint">Show the stem and a hidden timer on a candidate’s screen. Optional.</p>
-        <button class="btn" id="createRoomBtn" type="button">Create room</button>
-        <div class="hidden" id="roomLive">
-          <div class="room-code" id="roomCode" aria-label="Room code"></div>
-          <p class="room-meta" id="roomMeta" role="status" aria-live="polite"></p>
-          <button class="btn" id="closeRoomBtn" type="button">Close room</button>
-        </div>
-        <p class="status err" id="roomErr" role="alert"></p>
       </div>
     </section>
   </main>
@@ -157,7 +133,6 @@
   <div class="banner hidden" id="dBanner" role="status"></div>
   <div class="dtools">
     <button class="btn hidden" id="dEnableSound" type="button">Tap to enable sound</button>
-    <button class="btn quiet" id="dTestBell" type="button">Test bell</button>
   </div>
   <div class="black hidden" id="dBlack"></div>
 </div>

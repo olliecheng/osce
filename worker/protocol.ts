@@ -8,7 +8,6 @@ export const HOST_GRACE_MS = 2 * 60 * 1000;
 
 /** WebSocket close codes. */
 export const CLOSE = {
-  IN_PROGRESS: 4001,
   HOST_REPLACED: 4002,
   NO_ROOM: 4003,
   ROOM_CLOSED: 4004,
@@ -38,13 +37,12 @@ export type ServerMsg =
   | { type: "snapshot"; snapshot: DisplaySnapshot }
   | { type: "host"; connected: boolean }
   | { type: "closed" } // the room was closed (sent just before close code 4004)
-  | { type: "error"; code: "in_progress" | "no_room" | "bad_code" }
+  | { type: "error"; code: "no_room" | "bad_code" }
   | { type: "pong" };
 
 // server -> host
 export type ServerToHost =
-  | { type: "welcome"; code: string; displays: number }
-  | { type: "displays"; count: number }
+  | { type: "welcome"; code: string }
   | { type: "error"; code: "no_room" }
   | { type: "replaced" } // another host socket took over (sent just before close code 4002)
   | { type: "pong" };
@@ -124,19 +122,14 @@ export function parseServerMsg(raw: unknown): ServerMsg | ServerToHost | null {
       return { type: "replaced" };
     case "welcome":
       if (typeof v.code !== "string") return null;
-      if (typeof v.displays === "number") return { type: "welcome", code: v.code, displays: v.displays };
       if ((v.status === "lobby" || v.status === "running") && typeof v.hostConnected === "boolean")
         return { type: "welcome", code: v.code, status: v.status, hostConnected: v.hostConnected };
-      return null;
-    case "displays":
-      return typeof v.count === "number" ? { type: "displays", count: v.count } : null;
+      return { type: "welcome", code: v.code };
     case "host":
       return typeof v.connected === "boolean" ? { type: "host", connected: v.connected } : null;
     case "error":
       if (v.code === "no_room") return { type: "error", code: "no_room" };
-      return v.code === "in_progress" || v.code === "no_room" || v.code === "bad_code"
-        ? { type: "error", code: v.code }
-        : null;
+      return v.code === "no_room" || v.code === "bad_code" ? { type: "error", code: v.code } : null;
     case "snapshot": {
       const snapshot = sanitizeSnapshot(v.snapshot);
       return snapshot ? { type: "snapshot", snapshot } : null;

@@ -10,12 +10,19 @@ import {
   startStation,
 } from "./helpers";
 
-test("landing links to host and display", async ({ page }) => {
+test("header has Host and Join buttons, and the host page always has a room code and the help button", async ({
+  page,
+}) => {
   await page.goto("/");
-  await expect(page.getByRole("link", { name: "Run station" })).toHaveAttribute("href", "/host");
-  await expect(page.getByRole("link", { name: "Join as display" })).toHaveAttribute("href", "/join");
-  await page.getByRole("link", { name: "Run station" }).click();
-  await expect(page.locator("#planTitle")).toBeVisible();
+  await expect(page.locator("header .brand")).toHaveText("OSCE Simulation Platform");
+  await expect(page.getByRole("link", { name: "Host", exact: true })).toHaveAttribute("href", "/host");
+  await expect(page.getByRole("link", { name: "Join", exact: true })).toHaveAttribute("href", "/join");
+  await expect(page.locator("header #chipCode")).toHaveText(/^[A-HJ-NP-Z]{4}$/);
+  await expect(page.locator("header #bellTest")).toBeVisible();
+  await expect(page.locator("header #helpBtn")).toHaveCount(0);
+  await expect(page.locator("#drop #helpBtn")).toBeVisible();
+  await page.getByRole("link", { name: "Join", exact: true }).click();
+  await expect(page.locator("#codeIn")).toBeVisible();
 });
 
 test("host alone: full station on a fake clock rings at 60 s (x2), 420 s (x1), 480 s (x2), 540 s (x2)", async ({

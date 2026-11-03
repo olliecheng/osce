@@ -1,4 +1,4 @@
-import { bell, primeAudio, stopKeepAlive, testBell } from "../bell";
+import { bell, primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
 import { esc, md } from "../markdown";
 import type { HostView } from "../snapshot";
@@ -34,7 +34,6 @@ export function mountHost() {
     help: $<HTMLDialogElement>("help"),
     helpBtn: $("helpBtn"),
     helpClose: $("helpClose"),
-    bellTest: $("bellTest"),
   };
   $("tpl").textContent = TEMPLATE;
   $("prompt").textContent = PROMPT;
@@ -162,8 +161,6 @@ export function mountHost() {
     }
   } catch {}
 
-  els.bellTest.addEventListener("click", testBell);
-
   /* ---------- timer ---------- */
   const timer = new Timer();
   let tickId: ReturnType<typeof setInterval> | undefined;
@@ -226,35 +223,12 @@ export function mountHost() {
   const roomChip = $("roomChip");
   function renderRoom() {
     const u = room.ui;
-    const has = room.active;
-    $("createRoomBtn").classList.toggle("hidden", has);
-    $("roomLive").classList.toggle("hidden", !has);
-    $("roomErr").textContent = u.notice;
-    if (has) {
-      $("roomCode").textContent = u.code;
-      const n = u.displays;
-      $("roomMeta").textContent =
-        `${n} display${n === 1 ? "" : "s"} connected${u.connected ? "" : " · Reconnecting…"}`;
-    }
-    const inStation = readyOpen || timer.running;
-    $("roomHint").textContent =
-      inStation && has
-        ? "Displays can join between stations."
-        : "Show the stem and a hidden timer on a candidate’s screen. Optional.";
-    const showChip = has && !els.run.classList.contains("hidden");
-    roomChip.classList.toggle("hidden", !showChip);
-    if (showChip) {
-      $("chipCode").textContent = u.code;
-      $("chipCount").textContent =
-        `· ${u.displays} display${u.displays === 1 ? "" : "s"}${u.connected ? "" : " · reconnecting"}`;
-      $("chipNote").textContent = inStation ? "· Displays can join between stations" : "";
-    }
+    roomChip.classList.remove("hidden");
+    $("chipCode").textContent = u.code ?? "—";
+    $("chipNote").textContent = u.code && !u.connected ? "· reconnecting" : u.notice;
+    $("roomRetry").classList.toggle("hidden", !!u.code || !u.notice);
   }
-  $("createRoomBtn").addEventListener("click", async () => {
-    await room.create();
-    room.requestPush();
-  });
-  $("closeRoomBtn").addEventListener("click", () => room.close());
+  $("roomRetry").addEventListener("click", () => room.create());
 
   timer.on("tick", ({ leftMs }) => {
     const p = timer.phase;
@@ -519,5 +493,6 @@ export function mountHost() {
   );
 
   // A refresh mid-station loses timer state; reclaim the room and go back to the lobby.
-  room.reclaim();
+  if (!room.reclaim()) room.create();
+  renderRoom();
 }

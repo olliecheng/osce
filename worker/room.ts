@@ -91,7 +91,7 @@ export class Room extends DurableObject<Env> {
       state.hostConnected = true;
       state.hostGoneAt = null;
       await this.save(state);
-      this.sendHost(server, { type: "welcome", code: state.code, displays: this.displayCount() });
+      this.sendHost(server, { type: "welcome", code: state.code });
       this.broadcast({ type: "host", connected: true });
       return new Response(null, { status: 101, webSocket: client });
     }
@@ -100,9 +100,8 @@ export class Room extends DurableObject<Env> {
       this.ctx.acceptWebSocket(server, ["display"]);
       if (!state) {
         this.reject(server, "no_room", CLOSE.NO_ROOM);
-      } else if (state.status !== "lobby") {
-        this.reject(server, "in_progress", CLOSE.IN_PROGRESS);
       } else {
+        // Displays may join at any time and are brought up to date with the latest snapshot.
         this.send(server, {
           type: "welcome",
           code: state.code,
@@ -110,7 +109,6 @@ export class Room extends DurableObject<Env> {
           hostConnected: state.hostConnected,
         });
         if (state.snapshot) this.send(server, { type: "snapshot", snapshot: state.snapshot });
-        this.notifyHostDisplays();
       }
       return new Response(null, { status: 101, webSocket: client });
     }
@@ -172,10 +170,6 @@ export class Room extends DurableObject<Env> {
 
   private async onGone(ws: WebSocket): Promise<void> {
     const tags = this.ctx.getTags(ws);
-    if (tags.includes("display")) {
-      this.notifyHostDisplays(ws);
-      return;
-    }
     if (!tags.includes("host")) return;
     // If a replacement host socket is already live, this was not a disconnect.
     const others = this.ctx.getWebSockets("host").filter((s) => s !== ws && s.readyState === WebSocket.OPEN);
@@ -202,15 +196,10 @@ export class Room extends DurableObject<Env> {
   }
 
   /* ---- helpers ---- */
-  private displayCount(exclude?: WebSocket): number {
-    return this.ctx
-      .getWebSockets("display")
-      .filter((s) => s !== exclude && s.readyState === WebSocket.OPEN && !this.isRejected(s)).length;
-  }
   private isRejected(ws: WebSocket): boolean {
     return ws.deserializeAttachment()?.rejected === true;
   }
-  private reject(ws: WebSocket, code: "no_room" | "in_progress", closeCode: number) {
+  private reject(ws: WebSocket, code: "no_room", closeCode: number) {
     ws.serializeAttachment({ rejected: true });
     this.send(ws, { type: "error", code });
     ws.close(closeCode, code);
@@ -229,9 +218,5 @@ export class Room extends DurableObject<Env> {
     for (const ws of this.ctx.getWebSockets("display")) {
       if (!this.isRejected(ws)) this.send(ws, msg);
     }
-  }
-  private notifyHostDisplays(exclude?: WebSocket) {
-    const count = this.displayCount(exclude);
-    for (const h of this.ctx.getWebSockets("host")) this.sendHost(h, { type: "displays", count });
   }
 }

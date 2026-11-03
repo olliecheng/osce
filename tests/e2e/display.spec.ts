@@ -28,11 +28,9 @@ test("host + display: lobby join, stem only, synced timer, pause, skip, finish, 
 
   await openHost(host);
   const code = await createRoom(host);
-  await expect(host.locator("#roomMeta")).toHaveText("0 displays connected");
 
   await joinDisplay(disp, code);
   await expect(disp.locator("#lobbyMsg")).toHaveText(`Joined ${code}. Waiting for the station to start.`);
-  await expect(host.locator("#roomMeta")).toHaveText("1 display connected");
 
   // start: the host's black ready screen is plain black on the display
   await host.locator("#startBtn").click();
@@ -73,22 +71,18 @@ test("host + display: lobby join, stem only, synced timer, pause, skip, finish, 
   await host.locator("#pauseBtn").click();
   await expect(disp.locator("#dClock")).not.toHaveClass(/paused/);
 
-  // joining mid-station is rejected with the right message
+  // joining mid-station works and shows the stem straight away
   const late = await newPage(browser);
   await joinDisplay(late.page, code);
-  await expect(late.page.locator("#joinErr")).toHaveText(
-    "That station is in progress; join between stations.",
-  );
+  await expect(late.page.locator(".stem-box.reading-big")).toContainText(EXAMPLE_INTRO);
+  await expect(late.page.locator("#dPhaseName")).toHaveText("Examiner question");
   await late.ctx.close();
-  await expect(host.locator("#roomMeta")).toHaveText("1 display connected");
-  await expect(host.locator("#roomChip")).toContainText("Displays can join between stations");
 
   // finish -> lobby, display still joined
   await host.locator("#skipBtn").click();
   await expect(disp.getByText("Station finished. Waiting for the next one.")).toBeVisible();
-  await expect(host.locator("#roomMeta")).toHaveText("1 display connected");
 
-  // a late display can now join between stations
+  // a late display joining after the finish sees the finished screen
   const late2 = await newPage(browser);
   await joinDisplay(late2.page, code);
   await expect(late2.page.getByText("Station finished. Waiting for the next one.")).toBeVisible();
@@ -240,7 +234,7 @@ test("touch: tapping the strip reveals the band for 3 s", async ({ browser }) =>
   await d.ctx.close();
 });
 
-test("display errors: unknown code, bad code, room closed by host", async ({ browser }) => {
+test("display errors: unknown code, bad code, lowercase code", async ({ browser }) => {
   const d = await newPage(browser);
   await d.page.goto("/join");
   await d.page.locator("#codeIn").fill("ab1");
@@ -250,13 +244,13 @@ test("display errors: unknown code, bad code, room closed by host", async ({ bro
   await d.page.locator("#joinBtn").click();
   await expect(d.page.locator("#joinErr")).toHaveText("No station with that code.");
 
+  // lowercase codes are accepted
   const h = await newPage(browser);
   await openHost(h.page);
   const code = await createRoom(h.page);
   await joinDisplay(d.page, code.toLowerCase());
   await expect(d.page.locator("#lobbyMsg")).toBeVisible();
-  await h.page.locator("#closeRoomBtn").click();
-  await expect(d.page.locator("#joinErr")).toHaveText("This station was closed by the host.");
+  await expect(d.page.locator("header #chipCode")).toHaveText(code);
   await h.ctx.close();
   await d.ctx.close();
 });
@@ -271,9 +265,8 @@ test("host refresh reclaims the room and returns displays to the lobby", async (
   await startStation(h.page);
   await expect(d.page.locator("#dPhaseName")).toHaveText("Reading time");
   await h.page.reload();
-  await expect(h.page.locator("#roomCode")).toHaveText(code);
+  await expect(h.page.locator("#chipCode")).toHaveText(code);
   await expect(d.page.locator("#lobbyMsg")).toBeVisible();
-  await expect(h.page.locator("#roomMeta")).toHaveText("1 display connected");
   await h.ctx.close();
   await d.ctx.close();
 });

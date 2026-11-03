@@ -68,9 +68,9 @@ export async function startStation(page: Page, bare = false) {
   await expect(page.locator("#run")).toBeVisible();
 }
 
+/** A room is created automatically when the host page loads; read its code from the header. */
 export async function createRoom(host: Page): Promise<string> {
-  await host.locator("#createRoomBtn").click();
-  const code = host.locator("#roomCode");
+  const code = host.locator("#chipCode");
   await expect(code).toHaveText(/^[A-HJ-NP-Z]{4}$/);
   return (await code.textContent()) as string;
 }
