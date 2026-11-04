@@ -10,9 +10,9 @@ const slug = (c: CaseData) =>
 
 /**
  * Save the finished case as a PDF via the browser's print dialog (choose "Save as PDF").
- * Bullets the examiner marked off keep their grey strike-through so candidates can see what they got.
+ * Bullets the examiner marked off keep their grey strike-through, and flagged ones stay red, so candidates can see what they got.
  */
-export function printCase(c: CaseData, checked: ReadonlySet<string>) {
+export function printCase(c: CaseData, checked: ReadonlySet<string>, flagged: ReadonlySet<string>) {
   document.getElementById("printRoot")?.remove();
   const root = document.createElement("article");
   root.id = "printRoot";
@@ -29,7 +29,7 @@ export function printCase(c: CaseData, checked: ReadonlySet<string>) {
       )
       .join("")}</div>`;
   indexListItems(root, sectionIndex);
-  applyChecked(root, checked);
+  applyChecked(root, checked, flagged);
   document.body.append(root);
 
   const prevTitle = document.title;

@@ -47,6 +47,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
   /* ---------- case state ---------- */
   let current: CaseData | null = null;
   const checked = new Set<string>(); // bullets the assessor marked off; sent to viewers only at "done"
+  const flagged = new Set<string>(); // bullets the assessor flagged red; same rules
   const resetCaseBtn = $<HTMLButtonElement>("resetCaseBtn");
   resetCaseBtn.addEventListener("click", clearCase);
 
@@ -61,6 +62,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     }
     current = c;
     checked.clear();
+    flagged.clear();
     try {
       localStorage.setItem("osce-last-case", JSON.stringify({ text, sourceName }));
     } catch {}
@@ -93,6 +95,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
   function clearCase() {
     current = null;
     checked.clear();
+    flagged.clear();
     try {
       localStorage.removeItem("osce-last-case");
     } catch {}
@@ -237,7 +240,13 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
 
   /* ---------- room (second screen) ---------- */
   function view(): Omit<HostView, "seq"> {
-    const base = { sessionId, timerOnly: timer.timerOnly, case: current, checked: [...checked] };
+    const base = {
+      sessionId,
+      timerOnly: timer.timerOnly,
+      case: current,
+      checked: [...checked],
+      flagged: [...flagged],
+    };
     if (readyOpen)
       return {
         ...base,
@@ -365,6 +374,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     if (!current && !readyBare) return;
     sessionId = crypto.randomUUID();
     checked.clear();
+    flagged.clear();
     readyOpen = true;
     readyEl.classList.remove("hidden");
     $("readyGo").focus();
@@ -484,9 +494,9 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
   /** Key every bullet and restore its marked state after the case is (re)rendered. */
   function decorateCase(root: ParentNode) {
     indexListItems(root, sectionIndex);
-    applyChecked(root, checked);
+    applyChecked(root, checked, flagged);
   }
-  wireChecklist(els.stage, checked, () => !timer.finished);
+  wireChecklist(els.stage, checked, flagged, () => !timer.finished);
 
   function renderStage(id: string) {
     let html = "";
@@ -514,7 +524,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     decorateCase(els.stage);
     if (id === "done" && current) {
       $("downloadMdBtn").addEventListener("click", () => downloadCase(current as CaseData));
-      $("savePdfBtn").addEventListener("click", () => printCase(current as CaseData, checked));
+      $("savePdfBtn").addEventListener("click", () => printCase(current as CaseData, checked, flagged));
     } else if (id === "done") {
       $("downloadMdBtn").remove();
       $("savePdfBtn").remove();

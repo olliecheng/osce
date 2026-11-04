@@ -632,6 +632,10 @@ nav.index a:hover {
   text-decoration: line-through;
   opacity: 0.6;
 }
+.md li.flag {
+  color: var(--red, #c62828);
+  font-weight: 600;
+}
 .md li.done > ul,
 .md li.done > ol {
   text-decoration: none;
@@ -1185,6 +1189,10 @@ header.top{-webkit-user-select:none;user-select:none}
     color: #777;
     text-decoration: line-through;
     opacity: 1;
+  }
+  #printRoot .md li.flag {
+    color: #c00;
+    font-weight: 600;
   }
   #printRoot .md li.done > ul,
   #printRoot .md li.done > ol {

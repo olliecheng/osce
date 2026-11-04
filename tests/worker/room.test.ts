@@ -69,7 +69,7 @@ describe("snapshot allow-list", () => {
     const review = { question: "Q?", answer: "A", sections: [{ title: "x", md: "y" }] };
     expect(sanitizeSnapshot({ ...snap({ phase: "history" }), review })?.review).toBeNull();
     expect(sanitizeSnapshot({ ...snap({ phase: "done", timerOnly: true }), review })?.review).toBeNull();
-    const out = { ...review, checked: [] };
+    const out = { ...review, checked: [], flagged: [] };
     expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review })?.review).toEqual(out);
     expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review: { ...review, extra: 1 } })?.review).toEqual(
       out,

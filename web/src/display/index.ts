@@ -237,7 +237,8 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
     }
     const checkedSet = new Set(r.checked);
     indexListItems(box, sectionIndex);
-    applyChecked(box, checkedSet);
+    const flaggedSet = new Set(r.flagged);
+    applyChecked(box, checkedSet, flaggedSet);
     const leave = h("button", "leave-btn", "Leave");
     leave.id = "leaveBtn";
     leave.type = "button";
@@ -256,7 +257,7 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
     const pdf = h("button", "takeover-btn", "Save as PDF");
     pdf.id = "savePdfBtn";
     pdf.type = "button";
-    pdf.addEventListener("click", () => printCase(caseData(), checkedSet));
+    pdf.addEventListener("click", () => printCase(caseData(), checkedSet, flaggedSet));
     const actions = h("div", "dactions");
     actions.append(dl, pdf, leave);
     box.append(actions);

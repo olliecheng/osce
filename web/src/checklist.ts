@@ -14,25 +14,50 @@ export function indexListItems(root: ParentNode, sectionIdOf: (sec: HTMLElement)
   });
 }
 
-export function applyChecked(root: ParentNode, checked: ReadonlySet<string>) {
-  root.querySelectorAll<HTMLElement>("li[data-li]").forEach((li) => {
-    li.classList.toggle("done", checked.has(li.dataset.li as string));
-  });
+export function applyChecked(root: ParentNode, checked: ReadonlySet<string>, flagged: ReadonlySet<string>) {
+  root.querySelectorAll<HTMLElement>("li[data-li]").forEach((li) => paint(li, checked, flagged));
+}
+
+function paint(li: HTMLElement, checked: ReadonlySet<string>, flagged: ReadonlySet<string>) {
+  const key = li.dataset.li as string;
+  li.classList.toggle("done", checked.has(key));
+  li.classList.toggle("flag", flagged.has(key));
 }
 
 /** Index by the section's position among its siblings. */
 export const sectionIndex = (sec: HTMLElement) =>
   Array.prototype.indexOf.call(sec.parentElement?.children ?? [], sec);
 
-/** Click an <li> inside `root` to toggle its mark (innermost item). `enabled` gates it per click. */
-export function wireChecklist(root: HTMLElement, checked: Set<string>, enabled: () => boolean) {
-  root.addEventListener("click", (e) => {
-    if (!enabled()) return;
+/**
+ * Click an <li> inside `root` to toggle its grey strike-through; right-click to toggle red. The two
+ * marks are mutually exclusive, so left-clicking a red bullet turns it grey. `enabled` gates it per event.
+ */
+export function wireChecklist(
+  root: HTMLElement,
+  checked: Set<string>,
+  flagged: Set<string>,
+  enabled: () => boolean,
+) {
+  const target = (e: Event) => {
+    if (!enabled()) return null;
     const li = (e.target as HTMLElement).closest<HTMLElement>("li[data-li]");
-    if (!li || !root.contains(li)) return;
+    return li && root.contains(li) ? li : null;
+  };
+  root.addEventListener("click", (e) => {
+    const li = target(e);
+    if (!li) return;
     const key = li.dataset.li as string;
-    if (checked.has(key)) checked.delete(key);
-    else checked.add(key);
-    li.classList.toggle("done", checked.has(key));
+    if (flagged.delete(key)) checked.add(key);
+    else if (!checked.delete(key)) checked.add(key);
+    paint(li, checked, flagged);
+  });
+  root.addEventListener("contextmenu", (e) => {
+    const li = target(e);
+    if (!li) return;
+    e.preventDefault();
+    const key = li.dataset.li as string;
+    checked.delete(key);
+    if (!flagged.delete(key)) flagged.add(key);
+    paint(li, checked, flagged);
   });
 }

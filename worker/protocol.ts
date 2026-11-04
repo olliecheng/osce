@@ -36,6 +36,8 @@ export type DisplayReview = {
   sections: { title: string; md: string }[];
   /** Bullets the assessor marked off, as "<section>:<item>" keys (see web/src/checklist.ts). */
   checked: string[];
+  /** Bullets the assessor flagged red, same key format. */
+  flagged: string[];
 };
 
 const CHECK_KEY_RE = /^\d{1,2}:\d{1,3}$/;
@@ -90,7 +92,12 @@ function sanitizeReview(v: unknown): DisplayReview | null {
     for (const k of v.checked.slice(0, 1000))
       if (typeof k === "string" && CHECK_KEY_RE.test(k)) checked.push(k);
   }
-  const out = { question, answer, sections, checked };
+  const flagged: string[] = [];
+  if (Array.isArray(v.flagged)) {
+    for (const k of v.flagged.slice(0, 1000))
+      if (typeof k === "string" && CHECK_KEY_RE.test(k)) flagged.push(k);
+  }
+  const out = { question, answer, sections, checked, flagged };
   return JSON.stringify(out).length <= REVIEW_MAX_JSON ? out : null;
 }
 
