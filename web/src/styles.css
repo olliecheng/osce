@@ -1136,23 +1136,25 @@ header.top{-webkit-user-select:none;user-select:none}
   #printRoot {
     display: block;
     font-family: var(--body);
-    font-size: 12pt;
+    font-size: 10pt;
     line-height: 1.5;
     color: #000;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
   #printRoot h1 {
     font-family: var(--display);
-    font-size: 18pt;
+    font-size: 15pt;
     margin: 0 0 12pt;
   }
   #printRoot h2 {
     font-family: var(--display);
-    font-size: 14pt;
+    font-size: 12pt;
     margin: 0 0 4pt;
     break-after: avoid;
   }
   #printRoot .lbl {
-    font-size: 12pt;
+    font-size: 10pt;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -1172,13 +1174,13 @@ header.top{-webkit-user-select:none;user-select:none}
   }
   #printRoot .md,
   #printRoot .sec .md {
-    font-size: 12pt;
+    font-size: 10pt;
   }
   #printRoot .md h1,
   #printRoot .md h2,
   #printRoot .md h3,
   #printRoot .md h4 {
-    font-size: 12pt;
+    font-size: 10pt;
     margin: 8pt 0 2pt;
     break-after: avoid;
   }
@@ -1186,8 +1188,9 @@ header.top{-webkit-user-select:none;user-select:none}
     break-inside: avoid;
   }
   #printRoot .md li.done {
-    color: #777;
+    color: #6b6084;
     text-decoration: line-through;
+    text-decoration-color: #6b6084;
     opacity: 1;
   }
   #printRoot .md li.flag {
@@ -1199,7 +1202,7 @@ header.top{-webkit-user-select:none;user-select:none}
     text-decoration: none;
   }
   #printRoot .md code {
-    font-size: 11pt;
+    font-size: 9pt;
     background: #f1f1f1;
   }
 }
