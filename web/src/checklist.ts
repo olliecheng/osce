@@ -53,6 +53,14 @@ export function wireChecklist(
     paint(li, checked, flagged);
     onChange?.();
   });
+  // Safari selects the word under the cursor on a right-click (or Ctrl+click) at mousedown, before
+  // "contextmenu" fires, so it has to be stopped here.
+  root.addEventListener("mousedown", (e) => {
+    if (e.button !== 2 && !(e.button === 0 && e.ctrlKey)) return;
+    if (!target(e)) return;
+    e.preventDefault();
+    getSelection()?.removeAllRanges();
+  });
   root.addEventListener("contextmenu", (e) => {
     const li = target(e);
     if (!li) return;

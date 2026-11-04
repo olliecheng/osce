@@ -398,6 +398,12 @@ test("host keeps marking bullets after the station finishes and viewers update l
 
   await hostLi("0:0").click();
   await expect(dispLi("0:0")).toHaveClass(/done/);
+  // right-button mousedown on a bullet is default-prevented (stops Safari selecting the word)
+  expect(
+    await hostLi("0:1").evaluate(
+      (el) => !el.dispatchEvent(new MouseEvent("mousedown", { button: 2, bubbles: true, cancelable: true })),
+    ),
+  ).toBe(true);
   await hostLi("0:1").click({ button: "right" });
   await expect(dispLi("0:1")).toHaveClass(/flag/);
   await hostLi("0:0").click({ button: "right" }); // grey -> red
