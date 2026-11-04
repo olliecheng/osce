@@ -381,6 +381,35 @@ test("assessor marks off bullets; host and viewer see them grayed at the end", a
   await d.ctx.close();
 });
 
+test("host and viewer can save the finished case as PDF, keeping marked-off bullets struck through", async ({
+  browser,
+}) => {
+  const h = await newPage(browser);
+  const d = await newPage(browser);
+  await openHost(h.page);
+  const code = await createRoom(h.page);
+  await joinDisplay(d.page, code);
+  await expect(d.page.locator("#lobbyMsg")).toBeVisible();
+  await startStation(h.page);
+  await expect(d.page.locator("#savePdfBtn")).toHaveCount(0); // nothing while running
+  await h.page.locator("#skipBtn").click();
+  await h.page.locator('#stage li[data-li="0:0"]').click();
+  for (let i = 0; i < 2; i++) await h.page.locator("#skipBtn").click();
+  await expect(d.page.locator("#dPhaseName")).toHaveText("Station finished");
+  for (const page of [h.page, d.page]) {
+    await page.evaluate(() => {
+      window.print = () => {};
+    });
+    await page.locator("#savePdfBtn").click();
+    const root = page.locator("#printRoot");
+    await expect(root).toContainText("Peter Walsh");
+    await expect(root.locator("li.done")).toHaveCount(1);
+    await expect(root.locator('li[data-li="0:0"]')).toHaveClass(/done/);
+  }
+  await h.ctx.close();
+  await d.ctx.close();
+});
+
 test("clicking the room code makes a new room; viewers of the old one are told", async ({ browser }) => {
   const h = await newPage(browser);
   const d = await newPage(browser);

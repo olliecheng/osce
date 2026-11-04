@@ -2,7 +2,7 @@ import { type DisplaySnapshot, parseServerMsg, type ServerMsg } from "../../../w
 import { bindSmoothBar, fillBar, flashClock } from "../bar";
 import { audioRunning, primeAudio, stopKeepAlive } from "../bell";
 import { applyChecked, indexListItems, sectionIndex } from "../checklist";
-import { downloadCase } from "../download";
+import { downloadCase, printCase } from "../download";
 import { mdSafe } from "../markdown";
 import { ring as ringBell } from "../mute";
 import { Connection, wsUrl } from "../sync";
@@ -242,20 +242,23 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
     leave.id = "leaveBtn";
     leave.type = "button";
     leave.addEventListener("click", () => leaveRoom());
+    const caseData = () => ({
+      title: snap?.title ?? "Case",
+      intro: snap?.stem ?? "",
+      question: r.question ?? "",
+      answer: r.answer ?? "",
+      sections: r.sections,
+    });
     const dl = h("button", "takeover-btn", "Download .md");
     dl.id = "downloadMdBtn";
     dl.type = "button";
-    dl.addEventListener("click", () =>
-      downloadCase({
-        title: snap?.title ?? "Case",
-        intro: snap?.stem ?? "",
-        question: r.question ?? "",
-        answer: r.answer ?? "",
-        sections: r.sections,
-      }),
-    );
+    dl.addEventListener("click", () => downloadCase(caseData()));
+    const pdf = h("button", "takeover-btn", "Save as PDF");
+    pdf.id = "savePdfBtn";
+    pdf.type = "button";
+    pdf.addEventListener("click", () => printCase(caseData(), checkedSet));
     const actions = h("div", "dactions");
-    actions.append(dl, leave);
+    actions.append(dl, pdf, leave);
     box.append(actions);
     stage.replaceChildren(box);
     window.scrollTo({ top: 0 });

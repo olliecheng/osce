@@ -3,7 +3,7 @@ import { bindSmoothBar, fillBar, flashClock } from "../bar";
 import { primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
 import { applyChecked, indexListItems, sectionIndex, wireChecklist } from "../checklist";
-import { downloadCase } from "../download";
+import { downloadCase, printCase } from "../download";
 import { esc, md } from "../markdown";
 import { ring } from "../mute";
 import type { HostView } from "../snapshot";
@@ -497,15 +497,19 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
         `<div style="margin-top:26px">${answerBlock(false)}</div>` +
         `<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="showCaseBtn">Show case</button></div><div id="caseArea"></div>`;
     } else if (id === "done") {
-      html = `<div class="done-box">${questionBlock()}${answerStatic()}${stemBlock(false)}${caseBlock()}<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="downloadMdBtn">Download .md</button></div></div>`;
+      html = `<div class="done-box">${questionBlock()}${answerStatic()}${stemBlock(false)}${caseBlock()}<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="downloadMdBtn">Download .md</button><button class="btn" type="button" id="savePdfBtn">Save as PDF</button></div></div>`;
     }
     els.stage.innerHTML = html;
     els.stage.classList.toggle("markable", id !== "done");
     wireIndexLinks(els.stage);
     decorateCase(els.stage);
-    if (id === "done" && current)
+    if (id === "done" && current) {
       $("downloadMdBtn").addEventListener("click", () => downloadCase(current as CaseData));
-    else if (id === "done") $("downloadMdBtn").remove();
+      $("savePdfBtn").addEventListener("click", () => printCase(current as CaseData, checked));
+    } else if (id === "done") {
+      $("downloadMdBtn").remove();
+      $("savePdfBtn").remove();
+    }
     if (id === "question") wireShowCase($("showCaseBtn"), $("caseArea"));
   }
 

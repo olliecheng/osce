@@ -1111,3 +1111,87 @@ header.top{-webkit-user-select:none;user-select:none}
   header.top .show-timer input{position:relative;top:-.75px}
   .bell-ctl{margin-left:14.9px}
 }
+
+/* ---------- Save as PDF (print) ---------- */
+#printRoot {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 18mm;
+  }
+  body > *:not(#printRoot) {
+    display: none !important;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  #printRoot {
+    display: block;
+    font-family: var(--body);
+    font-size: 12pt;
+    line-height: 1.5;
+    color: #000;
+  }
+  #printRoot h1 {
+    font-family: var(--display);
+    font-size: 18pt;
+    margin: 0 0 12pt;
+  }
+  #printRoot h2 {
+    font-family: var(--display);
+    font-size: 14pt;
+    margin: 0 0 4pt;
+    break-after: avoid;
+  }
+  #printRoot .lbl {
+    font-size: 12pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 2pt;
+    color: #444;
+  }
+  #printRoot .pq,
+  #printRoot .pa,
+  #printRoot .ps,
+  #printRoot .sec {
+    margin: 0 0 12pt;
+  }
+  #printRoot .pq p,
+  #printRoot .ps p {
+    margin: 0;
+    white-space: pre-wrap;
+  }
+  #printRoot .md,
+  #printRoot .sec .md {
+    font-size: 12pt;
+  }
+  #printRoot .md h1,
+  #printRoot .md h2,
+  #printRoot .md h3,
+  #printRoot .md h4 {
+    font-size: 12pt;
+    margin: 8pt 0 2pt;
+    break-after: avoid;
+  }
+  #printRoot .md li {
+    break-inside: avoid;
+  }
+  #printRoot .md li.done {
+    color: #777;
+    text-decoration: line-through;
+    opacity: 1;
+  }
+  #printRoot .md li.done > ul,
+  #printRoot .md li.done > ol {
+    text-decoration: none;
+  }
+  #printRoot .md code {
+    font-size: 11pt;
+    background: #f1f1f1;
+  }
+}
