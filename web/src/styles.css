@@ -1064,7 +1064,7 @@ header.top .btn{padding-top:8px;padding-bottom:8px}
 /* Bell controls: two-state slider (bell | struck bell). Only the selected icon is boxed; the whole control's border shows on hover.
    To its left, a fixed-width right-justified label reads "Test bell" (click to test) or "Muted". */
 .bell-ctl{display:flex;align-items:center;gap:12px;position:relative}
-#bellTest{display:inline-flex;align-items:center;justify-content:flex-end;box-sizing:content-box;width:3.5em;padding-left:0;padding-right:0;border-left-width:0;border-right-width:0;text-align:right;font-weight:400;font-size:.9rem}
+#bellTest{display:inline-flex;align-items:center;justify-content:flex-end;box-sizing:content-box;white-space:nowrap;width:3.5em;padding-left:0;padding-right:0;border-left-width:0;border-right-width:0;text-align:right;font-weight:400;font-size:.9rem}
 #bellTest.is-muted{color:var(--red-hdr);cursor:default}
 #bellTest.is-muted:hover{background:transparent}
 .bell-seg .opt:nth-of-type(2) svg{transform:translate(-1px,-1.25px)}
@@ -1101,5 +1101,5 @@ header.top{-webkit-user-select:none;user-select:none}
   header.top #bellTest{transform:translateY(1px)}
   header.top .show-timer{transform:translateY(1px)}
   header.top .show-timer input{position:relative;top:-.75px}
-  .bell-ctl{margin-left:13.7px}
+  .bell-ctl{margin-left:14.9px}
 }
