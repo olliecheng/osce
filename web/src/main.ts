@@ -1,30 +1,36 @@
 import "./styles.css";
 import { flashClock } from "./bar";
-import { testBell } from "./bell";
+import { bell, primeAudio, testBell } from "./bell";
 import { mountDisplay } from "./display";
 import { mountHost } from "./host";
 import { isMuted, setMuted } from "./mute";
 
 const muteBtn = document.getElementById("bellMute");
 const testBtn = document.getElementById("bellTest");
-// During a station the button reads "Ring bell" and also flashes the clock like the 6-minute warning.
-// Phase-end bells never flash.
+// During a station the button reads "Ring bell": it rings once (silent while muted) and always flashes
+// the clock like the 6-minute warning. Phase-end bells never flash. Outside a station it is "Test bell",
+// which is inert while muted.
 const inStation = () => document.body.classList.contains("in-station");
 testBtn?.addEventListener("click", () => {
-  if (isMuted()) return;
-  testBell();
   if (inStation()) {
-    for (const c of document.querySelectorAll<HTMLElement>(".clock")) if (c.offsetParent) flashClock(c);
-  }
+    if (!isMuted()) {
+      primeAudio(true); // replaces the context; keep the station's keep-alive running on the new one
+      bell(1);
+    }
+    for (const c of document.querySelectorAll<HTMLElement>(".clock")) {
+      if (c.getClientRects().length) flashClock(c);
+    }
+  } else if (!isMuted()) testBell();
 });
 function renderMute() {
   const m = isMuted();
   muteBtn?.setAttribute("aria-pressed", String(m));
   muteBtn?.setAttribute("aria-label", m ? "Unmute bell" : "Mute bell");
   if (testBtn) {
-    testBtn.textContent = m ? "Muted" : inStation() ? "Ring bell" : "Test bell";
-    testBtn.classList.toggle("is-muted", m);
-    testBtn.setAttribute("aria-disabled", String(m));
+    const idle = m && !inStation();
+    testBtn.textContent = inStation() ? "Ring bell" : m ? "Muted" : "Test bell";
+    testBtn.classList.toggle("is-muted", idle);
+    testBtn.setAttribute("aria-disabled", String(idle));
   }
 }
 muteBtn?.addEventListener("click", () => {
