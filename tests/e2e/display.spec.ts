@@ -381,6 +381,35 @@ test("assessor marks off bullets; host and viewer see them grayed at the end", a
   await d.ctx.close();
 });
 
+test("host keeps marking bullets after the station finishes and viewers update live", async ({ browser }) => {
+  const h = await newPage(browser);
+  const d = await newPage(browser);
+  await openHost(h.page);
+  const code = await createRoom(h.page);
+  await joinDisplay(d.page, code);
+  await expect(d.page.locator("#lobbyMsg")).toBeVisible();
+  await startStation(h.page);
+  await h.page.locator("#skipBtn").click();
+  for (let i = 0; i < 2; i++) await h.page.locator("#skipBtn").click();
+  await expect(d.page.locator("#dPhaseName")).toHaveText("Station finished");
+
+  const hostLi = (k: string) => h.page.locator(`#stage li[data-li="${k}"]`);
+  const dispLi = (k: string) => d.page.locator(`li[data-li="${k}"]`).first();
+
+  await hostLi("0:0").click();
+  await expect(dispLi("0:0")).toHaveClass(/done/);
+  await hostLi("0:1").click({ button: "right" });
+  await expect(dispLi("0:1")).toHaveClass(/flag/);
+  await hostLi("0:0").click({ button: "right" }); // grey -> red
+  await expect(dispLi("0:0")).toHaveClass(/flag/);
+  await expect(dispLi("0:0")).not.toHaveClass(/done/);
+  await hostLi("0:1").click(); // red -> grey
+  await expect(dispLi("0:1")).toHaveClass(/done/);
+  await expect(dispLi("0:1")).not.toHaveClass(/flag/);
+  await h.ctx.close();
+  await d.ctx.close();
+});
+
 test("host and viewer can save the finished case as PDF, keeping marked-off bullets struck through", async ({
   browser,
 }) => {

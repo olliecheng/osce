@@ -37,6 +37,7 @@ export function wireChecklist(
   checked: Set<string>,
   flagged: Set<string>,
   enabled: () => boolean,
+  onChange?: () => void,
 ) {
   const target = (e: Event) => {
     if (!enabled()) return null;
@@ -50,6 +51,7 @@ export function wireChecklist(
     if (flagged.delete(key)) checked.add(key);
     else if (!checked.delete(key)) checked.add(key);
     paint(li, checked, flagged);
+    onChange?.();
   });
   root.addEventListener("contextmenu", (e) => {
     const li = target(e);
@@ -59,5 +61,6 @@ export function wireChecklist(
     checked.delete(key);
     if (!flagged.delete(key)) flagged.add(key);
     paint(li, checked, flagged);
+    onChange?.();
   });
 }

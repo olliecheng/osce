@@ -496,7 +496,16 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     indexListItems(root, sectionIndex);
     applyChecked(root, checked, flagged);
   }
-  wireChecklist(els.stage, checked, flagged, () => !timer.finished);
+  wireChecklist(
+    els.stage,
+    checked,
+    flagged,
+    () => true,
+    // Marks reach viewers only inside the finished-station review, so only push once it is showing.
+    () => {
+      if (timer.finished) room.requestPush();
+    },
+  );
 
   function renderStage(id: string) {
     let html = "";
@@ -519,7 +528,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
       html = `<div class="done-box">${questionBlock()}${answerStatic()}${stemBlock(false)}${caseBlock()}<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="downloadMdBtn">Download .md</button><button class="btn" type="button" id="savePdfBtn">Save as PDF</button></div></div>`;
     }
     els.stage.innerHTML = html;
-    els.stage.classList.toggle("markable", id !== "done");
+    els.stage.classList.add("markable");
     wireIndexLinks(els.stage);
     decorateCase(els.stage);
     if (id === "done" && current) {

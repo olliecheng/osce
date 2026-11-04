@@ -173,6 +173,13 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
   }
 
   let snap: DisplaySnapshot | null = null;
+  // The finished-screen DOM and its marks, so a mark-only update repaints in place (no rebuild, no scroll jump).
+  const checkedSet = new Set<string>();
+  const flaggedSet = new Set<string>();
+  let doneBox: HTMLElement | null = null;
+  let doneKey = "";
+  const reviewKey = (s: DisplaySnapshot) =>
+    JSON.stringify([s.sessionId, s.title, s.stem, { ...s.review, checked: 0, flagged: 0 }]);
 
   /** Mirrors the examiner's finished screen: question, model answer, then the case sections. */
   function showDone() {
@@ -235,10 +242,14 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
       wrap.append(nav, secs);
       box.append(wrap);
     }
-    const checkedSet = new Set(r.checked);
+    checkedSet.clear();
+    for (const k of r.checked) checkedSet.add(k);
+    flaggedSet.clear();
+    for (const k of r.flagged) flaggedSet.add(k);
     indexListItems(box, sectionIndex);
-    const flaggedSet = new Set(r.flagged);
     applyChecked(box, checkedSet, flaggedSet);
+    doneBox = box;
+    doneKey = reviewKey(snap);
     const leave = h("button", "leave-btn", "Leave");
     leave.id = "leaveBtn";
     leave.type = "button";
@@ -297,7 +308,13 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
       stage.replaceChildren();
       black.classList.remove("hidden");
     } else if (s.phase === "done") {
-      showDone();
+      if (s.review && doneBox?.isConnected && doneKey === reviewKey(s)) {
+        checkedSet.clear();
+        for (const k of s.review.checked) checkedSet.add(k);
+        flaggedSet.clear();
+        for (const k of s.review.flagged) flaggedSet.add(k);
+        applyChecked(doneBox, checkedSet, flaggedSet);
+      } else showDone();
     } else {
       showLobby();
     }
