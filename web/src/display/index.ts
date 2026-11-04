@@ -1,9 +1,10 @@
 import { type DisplaySnapshot, parseServerMsg, type ServerMsg } from "../../../worker/protocol";
 import { bindSmoothBar, fillBar, flashClock } from "../bar";
-import { audioRunning, bell, primeAudio, stopKeepAlive, testBell } from "../bell";
+import { audioRunning, primeAudio, stopKeepAlive } from "../bell";
 import { applyChecked, indexListItems, sectionIndex } from "../checklist";
 import { downloadCase } from "../download";
 import { mdSafe } from "../markdown";
+import { ring as ringBell } from "../mute";
 import { Connection, wsUrl } from "../sync";
 import { fmt, PHASES, type PhaseColor, Timer } from "../timer";
 
@@ -67,7 +68,7 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
     const key = `${sessionId}:${phaseId}:${kind}`;
     if (rung.has(key)) return;
     rung.add(key);
-    bell(kind === "warn" ? 1 : 2);
+    ringBell(kind === "warn" ? 1 : 2);
     if (kind === "warn") flashClock(clock);
   }
   timer.on("warn", ({ phase }) => ring("warn", phase.id));

@@ -1,10 +1,11 @@
 import { normalizeCode } from "../../../worker/protocol";
 import { bindSmoothBar, fillBar, flashClock } from "../bar";
-import { bell, primeAudio, stopKeepAlive } from "../bell";
+import { primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
 import { applyChecked, indexListItems, sectionIndex, wireChecklist } from "../checklist";
 import { downloadCase } from "../download";
 import { esc, md } from "../markdown";
+import { ring } from "../mute";
 import type { HostView } from "../snapshot";
 import { fmt, type PhaseColor, Timer } from "../timer";
 import { PROMPT, TEMPLATE } from "./content";
@@ -284,10 +285,10 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     room.requestPush();
   });
   timer.on("warn", () => {
-    bell(1);
+    ring(1);
     flashClock(els.clock);
   });
-  timer.on("end", () => bell(2));
+  timer.on("end", () => ring(2));
   timer.on("pause", () => {
     els.pauseBtn.textContent = "Resume";
     els.clock.classList.add("paused");

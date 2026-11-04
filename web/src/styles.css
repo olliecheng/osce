@@ -1061,20 +1061,45 @@ header.top .btn{padding-top:8px;padding-bottom:8px}
 .room-chip #chipNote{position:absolute;top:100%;left:0;white-space:nowrap;font-size:.8rem}
 .room-chip #chipNote:empty{display:none}
 
-/* Test bell: icon + label; right-aligned on phones */
-#bellTest{display:inline-flex;align-items:center;gap:4px;font-weight:400;font-size:.9rem}
-#bellTest svg{display:block;flex:none;transform:translateY(-2px)}
+/* Bell controls: two-state slider (bell | struck bell). Only the selected icon is boxed; the whole control's border shows on hover.
+   To its left, a fixed-width right-justified label reads "Test bell" (click to test) or "Muted". */
+.bell-ctl{display:flex;align-items:center;gap:12px;position:relative}
+#bellTest{display:inline-flex;align-items:center;justify-content:flex-end;box-sizing:content-box;width:3.5em;padding-left:0;padding-right:0;border-left-width:0;border-right-width:0;text-align:right;font-weight:400;font-size:.9rem}
+#bellTest.is-muted{color:var(--red-hdr);cursor:default}
+#bellTest.is-muted:hover{background:transparent}
+.bell-seg .opt:nth-of-type(2) svg{transform:translate(-1px,-1.25px)}
+.bell-seg .opt:last-of-type svg{transform:translate(0,-.5px)}
+.bell-seg{appearance:none;position:relative;display:inline-grid;grid-template-columns:1fr 1fr;padding:0;margin:0;background:transparent;color:inherit;--bw:1px;border:var(--bw) solid transparent;cursor:pointer;font:inherit;transition:border-color .15s}
+.bell-seg:hover,.bell-seg:focus-visible{border-color:color-mix(in srgb,currentColor 45%,transparent)}
+.bell-seg .opt{position:relative;z-index:1;display:grid;place-items:center;width:34px;height:26px}
+.bell-seg .opt svg{display:block}
+.bell-seg .opt{transition:opacity .2s}
+.bell-seg:not([aria-pressed="true"]) .opt:nth-of-type(3),.bell-seg[aria-pressed="true"] .opt:nth-of-type(2){opacity:.45}
+.bell-seg .thumb{position:absolute;z-index:2;top:calc(-1*var(--bw));bottom:calc(-1*var(--bw));left:calc(-1*var(--bw));width:calc(50% + var(--bw));border:var(--bw) solid currentColor;pointer-events:none;transition:transform .2s ease,color .2s}
+.bell-seg[aria-pressed="true"]{color:var(--red-hdr)}
+.bell-seg[aria-pressed="true"] .thumb{transform:translateX(100%)}
+header.top{--red-hdr:#ff8f86}
+body.in-station header.top{--red-hdr:var(--red)}
 @media (max-width:700px){
   header.top .brand{flex:0 0 100%}
-  #bellTest{margin-left:auto}
+  .bell-ctl{margin-left:auto;order:2}
   header.top .wrap{row-gap:0;padding-top:6px;padding-bottom:2px}
   header.top .btn{padding-top:2px;padding-bottom:2px}
   .show-timer{margin-left:0;margin-right:0;order:3;flex:0 0 100%} /* last row */
   header.top .room-chip{order:1;flex-wrap:wrap}
-  #bellTest{order:2}
   /* On phones the note sits in the flow so it can't overlap the Show timer row. */
   .room-chip #chipNote{position:static;flex-basis:100%}
 }
 
 /* The navbar is chrome, not content: no text selection. */
 header.top{-webkit-user-select:none;user-select:none}
+
+/* Desktop: the font's caps/x-height sit above the line-box centre, so nudge the text down to the optical centre shared with the bell toggle. */
+@media (min-width:701px){
+  header.top .brand{transform:translateY(2px)}
+  header.top .room-chip{transform:translateY(.5px)}
+  header.top #bellTest{transform:translateY(1px)}
+  header.top .show-timer{transform:translateY(1px)}
+  header.top .show-timer input{position:relative;top:-.75px}
+  .bell-ctl{margin-left:13.7px}
+}
