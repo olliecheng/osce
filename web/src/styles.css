@@ -599,6 +599,9 @@ nav.index a:hover {
 .sec.lead {
   border-left-color: var(--teal);
 }
+.sec .md {
+  font-size: 14px;
+}
 .md > :first-child {
   margin-top: 0;
 }
