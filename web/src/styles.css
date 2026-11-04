@@ -632,9 +632,9 @@ nav.index a:hover {
   text-decoration: line-through;
   opacity: 0.6;
 }
-.md li.flag {
-  color: var(--red, #c62828);
-  font-weight: 600;
+.md li.flag,
+.md li.flag :is(strong, em, a, code) {
+  color: var(--red);
 }
 .md li.done > ul,
 .md li.done > ol {
@@ -1193,9 +1193,9 @@ header.top{-webkit-user-select:none;user-select:none}
     text-decoration-color: #6b6084;
     opacity: 1;
   }
-  #printRoot .md li.flag {
+  #printRoot .md li.flag,
+  #printRoot .md li.flag :is(strong, em, a, code) {
     color: #c00;
-    font-weight: 600;
   }
   #printRoot .md li.done > ul,
   #printRoot .md li.done > ol {
