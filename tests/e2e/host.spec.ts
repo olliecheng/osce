@@ -222,3 +222,18 @@ test("no-room regression: paste, file, example, ready screen, timer only, two-cl
   await page.getByRole("button", { name: "Close" }).click();
   await expect(page.locator("#help")).toBeHidden();
 });
+
+test("#load=<base64> preloads the case and strips the fragment", async ({ page }) => {
+  const md = '---\nintro: "Linked intro é"\nquestion: "Q?"\n---\n\n## One\nHello\n';
+  await page.goto(`/#load=${Buffer.from(md, "utf8").toString("base64")}`);
+  await expect(page.locator("#planStem")).toHaveText("Linked intro é");
+  expect(new URL(page.url()).hash).toBe("");
+  await page.reload();
+  await expect(page.locator("#planStem")).toHaveText("Linked intro é");
+});
+
+test("bad #load= fragment is stripped and reports an error", async ({ page }) => {
+  await page.goto("/#load=!!!notbase64");
+  await expect(page.locator("#status")).toHaveText("Couldn’t read the case in the link.");
+  expect(new URL(page.url()).hash).toBe("");
+});

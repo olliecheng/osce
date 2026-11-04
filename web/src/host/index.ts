@@ -4,6 +4,7 @@ import { primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
 import { applyChecked, indexListItems, sectionIndex, wireChecklist } from "../checklist";
 import { downloadCase, printCase } from "../download";
+import { decodeLoadFragment, hasLoadFragment } from "../fragment";
 import { esc, md } from "../markdown";
 import { ring } from "../mute";
 import type { HostView } from "../snapshot";
@@ -186,6 +187,14 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
       setStatus(`Reloaded last case (${saved.sourceName || "file"}).`);
     }
   } catch {}
+
+  // `#load=<base64 markdown>` preloads a case (overriding the remembered one), then the fragment is removed.
+  if (hasLoadFragment(location.hash)) {
+    const text = decodeLoadFragment(location.hash);
+    history.replaceState(null, "", location.pathname + location.search);
+    if (text) loadCase(text, "shared link");
+    else setStatus("Couldn’t read the case in the link.", true);
+  }
 
   /* ---------- join box: open this device as a display ---------- */
   $("joinForm").addEventListener("submit", (e) => {
