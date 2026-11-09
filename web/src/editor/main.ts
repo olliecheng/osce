@@ -46,8 +46,18 @@ const readFields = (): Fields => ({
   question: inputs.question.value.trim(),
   answer: inputs.answer.value.trim(),
 });
+/** Grow a textarea to show all its content. */
+const autosize = (el: HTMLElement) => {
+  if (!(el instanceof HTMLTextAreaElement) || !el.offsetParent) return; // hidden: refit when shown
+  el.style.height = "auto";
+  el.style.height = `${el.scrollHeight + (el.offsetHeight - el.clientHeight)}px`;
+};
+const fitAll = () => {
+  for (const k of FIELD_IDS) fit(inputs[k]);
+};
 const writeFields = (f: Fields) => {
   for (const k of FIELD_IDS) inputs[k].value = f[k];
+  fitAll();
 };
 
 let lastText = ""; // the last Markdown this page wrote to, or read from, storage
@@ -128,7 +138,17 @@ const toolbar = mountToolbar($("edToolbar"), () => editor, {
   llm: () => llm.toggle(),
 });
 
-for (const k of FIELD_IDS) inputs[k].addEventListener("input", schedule);
+for (const k of FIELD_IDS) {
+  inputs[k].addEventListener("input", () => {
+    fit(inputs[k]);
+    schedule();
+  });
+}
+// Refit when a field is shown again or its width changes.
+const ro = new ResizeObserver(fitAll);
+for (const k of FIELD_IDS) ro.observe(inputs[k]);
+document.fonts?.ready.then(fitAll);
+fitAll();
 window.addEventListener("pagehide", persist);
 
 // Changes made on the station page (loading a case) arrive here; removal there ("Reset case") is ignored.

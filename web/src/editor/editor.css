@@ -30,10 +30,11 @@
 .llm-prompt { margin-block: 0; padding: 12px; max-height: 360px; overflow: auto; white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); font: 13px/1.5 var(--mono); }
 .ed-fields { display: grid; gap: 10px; }
 .ed-fields label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
-.ed-fields input, .ed-fields textarea { font: inherit; font-size: 16px; padding: 8px 10px; background: var(--surface); color: var(--ink); border: 2px solid var(--edge); width: 100%; box-sizing: border-box; resize: vertical; }
+.ed-fields input, .ed-fields textarea { font: inherit; font-size: 16px; padding: 8px 10px; background: var(--surface); color: var(--ink); border: 2px solid var(--edge); width: 100%; box-sizing: border-box; }
+.ed-fields textarea { resize: none; overflow: hidden; }
 .ed-surface { background: var(--surface); border: 2px solid var(--edge); padding: 14px 18px; min-height: 40vh; }
-.ed-doc { outline: none; min-height: 36vh; }
-.ed-doc h1 { font-size: 20px; margin: 18px 0 6px; padding-bottom: 4px; border-bottom: 2px solid var(--line); color: var(--primary); }
+.ed-doc { outline: none; min-height: 36vh; font-size: 15px; line-height: 1.45; }
+.ed-doc h1 { font-size: 18px; margin: 18px 0 6px; padding-bottom: 4px; border-bottom: 2px solid var(--line); color: var(--primary); }
 .ed-doc h1:first-child { margin-top: 0; }
 .ed-doc ul { margin: 0; padding-left: 22px; }
 .ed-doc li { margin: 3px 0; }

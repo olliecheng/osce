@@ -222,3 +222,13 @@ test("editor: Backspace on an empty bullet deletes it and moves to the previous 
   await page.keyboard.type("X");
   await expect(body(page).locator("h1")).toHaveText("SecX");
 });
+
+test("editor: front matter textareas grow to fit their content", async ({ page }) => {
+  await page.goto("/editor");
+  const ta = page.locator("#fAnswer");
+  const before = (await ta.boundingBox())!.height;
+  await ta.fill(Array.from({ length: 12 }, (_, i) => `line ${i}`).join("\n"));
+  const after = (await ta.boundingBox())!.height;
+  expect(after).toBeGreaterThan(before + 100);
+  expect(await ta.evaluate((e) => e.scrollHeight <= e.clientHeight)).toBe(true);
+});
