@@ -532,6 +532,27 @@ header.top .wrap {
 .answer .md {
   margin-top: 10px;
 }
+.feedback {
+  margin-top: 22px;
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+}
+.feedback textarea,
+.feedback .fb-text {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 10px;
+  min-height: 7em;
+  padding: 10px 12px;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  resize: vertical;
+  white-space: pre-wrap;
+}
 .preread[open] summary {
   margin-bottom: 18px;
 }
@@ -1161,12 +1182,14 @@ header.top{-webkit-user-select:none;user-select:none}
     margin: 0 0 2pt;
     color: #444;
   }
+  #printRoot .pf,
   #printRoot .pq,
   #printRoot .pa,
   #printRoot .ps,
   #printRoot .sec {
     margin: 0 0 12pt;
   }
+  #printRoot .pf p,
   #printRoot .pq p,
   #printRoot .ps p {
     margin: 0;

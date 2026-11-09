@@ -14,6 +14,8 @@ export type HostView = {
   checked?: readonly string[];
   /** Bullets flagged red by the assessor. Only ever read at `done`. */
   flagged?: readonly string[];
+  /** Assessor's written feedback. Only ever read at `done`. */
+  feedback?: string;
 };
 
 /**
@@ -35,19 +37,20 @@ export function buildSnapshot(v: HostView): DisplaySnapshot {
     stem: hasCase ? v.case?.intro || null : null,
     review:
       hasCase && v.phase === "done"
-        ? buildReview(v.case as CaseData, v.checked ?? [], v.flagged ?? [])
+        ? buildReview(v.case as CaseData, v.checked ?? [], v.flagged ?? [], v.feedback ?? "")
         : null,
   });
   if (!out) throw new Error("invalid snapshot");
   return out;
 }
 
-function buildReview(c: CaseData, checked: readonly string[], flagged: readonly string[]) {
+function buildReview(c: CaseData, checked: readonly string[], flagged: readonly string[], feedback: string) {
   return {
     question: c.question || null,
     answer: c.answer || null,
     sections: c.sections.map((s) => ({ title: s.title, md: s.md })),
     checked: [...checked],
     flagged: [...flagged],
+    feedback,
   };
 }

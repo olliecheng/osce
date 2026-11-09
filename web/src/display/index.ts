@@ -177,9 +177,10 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
   const checkedSet = new Set<string>();
   const flaggedSet = new Set<string>();
   let doneBox: HTMLElement | null = null;
+  let feedbackText = "";
   let doneKey = "";
   const reviewKey = (s: DisplaySnapshot) =>
-    JSON.stringify([s.sessionId, s.title, s.stem, { ...s.review, checked: 0, flagged: 0 }]);
+    JSON.stringify([s.sessionId, s.title, s.stem, { ...s.review, checked: 0, flagged: 0, feedback: 0 }]);
 
   /** Mirrors the examiner's finished screen: question, model answer, then the case sections. */
   function showDone() {
@@ -211,6 +212,12 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
       a.append(body);
       box.append(a);
     }
+    feedbackText = r.feedback;
+    const fb = h("div", "feedback");
+    fb.id = "feedbackBox";
+    fb.classList.toggle("hidden", !r.feedback);
+    fb.append(h("p", "answer-title", "Feedback"), h("div", "fb-text", r.feedback));
+    box.append(fb);
     if (snap.stem) {
       const s = h("div", "stem-box");
       s.append(h("p", "lbl", "Candidate instructions"), h("p", "s", snap.stem));
@@ -268,7 +275,7 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
     const pdf = h("button", "takeover-btn", "Save as PDF");
     pdf.id = "savePdfBtn";
     pdf.type = "button";
-    pdf.addEventListener("click", () => printCase(caseData(), checkedSet, flaggedSet));
+    pdf.addEventListener("click", () => printCase(caseData(), checkedSet, flaggedSet, feedbackText));
     const actions = h("div", "dactions");
     actions.append(dl, pdf, leave);
     box.append(actions);
@@ -314,6 +321,13 @@ export function mountDisplay(onLeave: () => void, onTakeover: (code: string, tok
         flaggedSet.clear();
         for (const k of s.review.flagged) flaggedSet.add(k);
         applyChecked(doneBox, checkedSet, flaggedSet);
+        feedbackText = s.review.feedback;
+        const fb = doneBox.querySelector<HTMLElement>("#feedbackBox");
+        if (fb) {
+          fb.classList.toggle("hidden", !feedbackText);
+          const t = fb.querySelector(".fb-text");
+          if (t) t.textContent = feedbackText;
+        }
       } else showDone();
     } else {
       showLobby();

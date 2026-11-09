@@ -1,4 +1,4 @@
-import { normalizeCode } from "../../../worker/protocol";
+import { FEEDBACK_MAX, normalizeCode } from "../../../worker/protocol";
 import { bindSmoothBar, fillBar, flashClock } from "../bar";
 import { primeAudio, stopKeepAlive } from "../bell";
 import { type CaseData, parseCase } from "../case";
@@ -48,6 +48,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
   let current: CaseData | null = null;
   const checked = new Set<string>(); // bullets the assessor marked off; sent to viewers only at "done"
   const flagged = new Set<string>(); // bullets the assessor flagged red; same rules
+  let feedback = ""; // assessor's written feedback; same rules
   const resetCaseBtn = $<HTMLButtonElement>("resetCaseBtn");
   resetCaseBtn.addEventListener("click", clearCase);
 
@@ -63,6 +64,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     current = c;
     checked.clear();
     flagged.clear();
+    feedback = "";
     try {
       localStorage.setItem("osce-last-case", JSON.stringify({ text, sourceName }));
     } catch {}
@@ -96,6 +98,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     current = null;
     checked.clear();
     flagged.clear();
+    feedback = "";
     try {
       localStorage.removeItem("osce-last-case");
     } catch {}
@@ -246,6 +249,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
       case: current,
       checked: [...checked],
       flagged: [...flagged],
+      feedback,
     };
     if (readyOpen)
       return {
@@ -375,6 +379,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     sessionId = crypto.randomUUID();
     checked.clear();
     flagged.clear();
+    feedback = "";
     readyOpen = true;
     readyEl.classList.remove("hidden");
     $("readyGo").focus();
@@ -468,6 +473,11 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     return `<div class="answer"><p class="answer-title">Model answer</p><div class="md">${md(current.answer)}</div></div>`;
   }
 
+  function feedbackBlock() {
+    if (!current) return "";
+    return `<div class="feedback"><label class="answer-title" for="feedbackIn">Feedback</label><textarea id="feedbackIn" maxlength="${FEEDBACK_MAX}" placeholder="Written feedback for the candidate. Appears on viewers' screens and at the top of the PDF.">${esc(feedback)}</textarea></div>`;
+  }
+
   function wireIndexLinks(root: ParentNode) {
     root.querySelectorAll<HTMLAnchorElement>(".index a").forEach((a) =>
       a.addEventListener("click", (e) => {
@@ -525,15 +535,23 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
         `<div style="margin-top:26px">${answerBlock(false)}</div>` +
         `<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="showCaseBtn">Show case</button></div><div id="caseArea"></div>`;
     } else if (id === "done") {
-      html = `<div class="done-box">${questionBlock()}${answerStatic()}${stemBlock(false)}${caseBlock()}<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="downloadMdBtn">Download .md</button><button class="btn" type="button" id="savePdfBtn">Save as PDF</button></div></div>`;
+      html = `<div class="done-box">${questionBlock()}${answerStatic()}${feedbackBlock()}${stemBlock(false)}${caseBlock()}<div class="actions" style="margin-top:22px"><button class="btn" type="button" id="downloadMdBtn">Download .md</button><button class="btn" type="button" id="savePdfBtn">Save as PDF</button></div></div>`;
     }
     els.stage.innerHTML = html;
     els.stage.classList.add("markable");
     wireIndexLinks(els.stage);
     decorateCase(els.stage);
     if (id === "done" && current) {
+      let t: ReturnType<typeof setTimeout> | undefined;
+      $<HTMLTextAreaElement>("feedbackIn").addEventListener("input", (e) => {
+        feedback = (e.target as HTMLTextAreaElement).value.slice(0, FEEDBACK_MAX);
+        clearTimeout(t);
+        t = setTimeout(() => room.requestPush(), 250);
+      });
       $("downloadMdBtn").addEventListener("click", () => downloadCase(current as CaseData));
-      $("savePdfBtn").addEventListener("click", () => printCase(current as CaseData, checked, flagged));
+      $("savePdfBtn").addEventListener("click", () =>
+        printCase(current as CaseData, checked, flagged, feedback),
+      );
     } else if (id === "done") {
       $("downloadMdBtn").remove();
       $("savePdfBtn").remove();

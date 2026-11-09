@@ -69,11 +69,21 @@ describe("snapshot allow-list", () => {
     const review = { question: "Q?", answer: "A", sections: [{ title: "x", md: "y" }] };
     expect(sanitizeSnapshot({ ...snap({ phase: "history" }), review })?.review).toBeNull();
     expect(sanitizeSnapshot({ ...snap({ phase: "done", timerOnly: true }), review })?.review).toBeNull();
-    const out = { ...review, checked: [], flagged: [] };
+    const out = { ...review, checked: [], flagged: [], feedback: "" };
     expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review })?.review).toEqual(out);
     expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review: { ...review, extra: 1 } })?.review).toEqual(
       out,
     );
+  });
+  it("keeps feedback only in the done phase, as a string", () => {
+    const review = { question: null, answer: null, sections: [], feedback: "Good structure." };
+    expect(sanitizeSnapshot({ ...snap({ phase: "done" }), review })?.review?.feedback).toBe(
+      "Good structure.",
+    );
+    expect(sanitizeSnapshot({ ...snap({ phase: "history" }), review })?.review).toBeNull();
+    expect(
+      sanitizeSnapshot({ ...snap({ phase: "done" }), review: { ...review, feedback: 5 } })?.review?.feedback,
+    ).toBe("");
   });
   it("keeps only well-formed checked keys, and only in the done phase", () => {
     const review = {

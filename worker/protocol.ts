@@ -38,9 +38,12 @@ export type DisplayReview = {
   checked: string[];
   /** Bullets the assessor flagged red, same key format. */
   flagged: string[];
+  /** Assessor's written feedback, edited live on the host. */
+  feedback: string;
 };
 
 const CHECK_KEY_RE = /^\d{1,2}:\d{1,3}$/;
+export const FEEDBACK_MAX = 5000;
 const REVIEW_MAX_JSON = 48 * 1024; // keep the whole snapshot under MAX_MESSAGE_BYTES
 
 // host -> server
@@ -97,7 +100,8 @@ function sanitizeReview(v: unknown): DisplayReview | null {
     for (const k of v.flagged.slice(0, 1000))
       if (typeof k === "string" && CHECK_KEY_RE.test(k)) flagged.push(k);
   }
-  const out = { question, answer, sections, checked, flagged };
+  const feedback = typeof v.feedback === "string" ? v.feedback.slice(0, FEEDBACK_MAX) : "";
+  const out = { question, answer, sections, checked, flagged, feedback };
   return JSON.stringify(out).length <= REVIEW_MAX_JSON ? out : null;
 }
 

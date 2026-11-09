@@ -10,9 +10,14 @@ const slug = (c: CaseData) =>
 
 /**
  * Save the finished case as a PDF via the browser's print dialog (choose "Save as PDF").
- * Bullets the examiner marked off keep their grey strike-through, and flagged ones stay red, so candidates can see what they got.
+ * Written feedback, if any, goes at the very top. Bullets the examiner marked off keep their grey strike-through, and flagged ones stay red, so candidates can see what they got.
  */
-export function printCase(c: CaseData, checked: ReadonlySet<string>, flagged: ReadonlySet<string>) {
+export function printCase(
+  c: CaseData,
+  checked: ReadonlySet<string>,
+  flagged: ReadonlySet<string>,
+  feedback = "",
+) {
   document.getElementById("printRoot")?.remove();
   const root = document.createElement("article");
   root.id = "printRoot";
@@ -20,6 +25,7 @@ export function printCase(c: CaseData, checked: ReadonlySet<string>, flagged: Re
     body ? `<div class="${cls}"><p class="lbl">${label}</p>${body}</div>` : "";
   root.innerHTML =
     `<h1>${esc(c.title || "Case")}</h1>` +
+    block("pf", "Assessor feedback", feedback.trim() ? `<p>${esc(feedback)}</p>` : "") +
     block("pq", "Examiner asks", c.question ? `<p>${esc(c.question)}</p>` : "") +
     block("pa", "Model answer", c.answer ? `<div class="md">${mdSafe(c.answer)}</div>` : "") +
     block("ps", "Candidate instructions", c.intro ? `<p>${esc(c.intro)}</p>` : "") +

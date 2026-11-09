@@ -51,6 +51,9 @@ describe("buildSnapshot privacy allow-list", () => {
       checked: ["0:1", "1:0"],
     });
     expect(marked.review?.checked).toEqual(["0:1", "1:0"]);
+    const fb = { ...base, timerOnly: false, case: c, feedback: "Nice work" } as const;
+    expect(buildSnapshot({ ...fb, phase: "done" }).review?.feedback).toBe("Nice work");
+    expect(JSON.stringify(buildSnapshot({ ...fb, phase: "history" }))).not.toContain("Nice work");
     const running = buildSnapshot({ ...base, phase: "history", timerOnly: false, case: c, checked: ["0:1"] });
     expect(JSON.stringify(running)).not.toContain("0:1");
     expect(buildSnapshot({ ...base, phase: "question", timerOnly: false, case: c }).review).toBeNull();
