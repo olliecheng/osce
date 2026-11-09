@@ -55,7 +55,13 @@ test("editor: Save downloads the case; Load reads a file", async ({ page }) => {
   await page.locator("#tbStyle").selectOption("header");
   await page.keyboard.press("Enter");
   await page.keyboard.type("- 5 * 3");
-  const [dl] = await Promise.all([page.waitForEvent("download"), page.locator("#tbSave").click()]);
+  const [dl] = await Promise.all([
+    page.waitForEvent("download"),
+    (async () => {
+      await page.locator("#tbSave").click();
+      await page.getByRole("menuitem", { name: "Export as .md" }).click();
+    })(),
+  ]);
   expect(dl.suggestedFilename()).toBe("my-case.md");
   const text = await (await import("node:fs/promises")).readFile((await dl.path())!, "utf8");
   expect(text).toContain("title: |\n  My case");
@@ -73,12 +79,19 @@ test("editor: Save downloads the case; Load reads a file", async ({ page }) => {
   await expect(page.locator("#edNotice")).toContainText("1 sub-heading");
 });
 
-test("editor: Save as PDF sits left of Use LLM and prints the case in the station's print layout", async ({
+test("editor: Export menu offers .md and PDF; PDF prints the case in the station's print layout", async ({
   page,
 }) => {
   await page.goto("/editor");
-  const order = await page.locator(".ed-bar .btn").allTextContents();
-  expect(order.indexOf("Save as PDF")).toBe(order.indexOf("Use LLM") - 1);
+  // "Export" is a dropdown just left of Load, offering .md and PDF
+  const order = await page.locator(".ed-bar > .ed-menu-wrap > .btn").allTextContents();
+  expect(order.map((t) => t.trim())).toEqual(["Export ▾", "Load ▾"]);
+  await page.locator("#tbSave").click();
+  await expect(page.getByRole("menuitem")).toHaveText(["Export as .md", "Export as PDF"]);
+  await page.locator("#tbLoad").click(); // opening Load closes the Save menu
+  await expect(page.locator("#tbSaveMenu")).toBeHidden();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#tbMenu")).toBeHidden();
   await page.locator("#tbLoad").click();
   await page.locator("#tbLoadClip").click();
   await page
@@ -93,7 +106,8 @@ test("editor: Save as PDF sits left of Use LLM and prints the case in the statio
       (window as unknown as { __print: string }).__print = r ? r.innerHTML : "";
     };
   });
-  await page.locator("#tbPdf").click();
+  await page.locator("#tbSave").click();
+  await page.getByRole("menuitem", { name: "Export as PDF" }).click();
   const html = await page.evaluate(() => (window as unknown as { __print: string }).__print);
   expect(html).toContain("<h1>Print me</h1>");
   expect(html).toContain("Q here?");
