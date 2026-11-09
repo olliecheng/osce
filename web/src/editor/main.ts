@@ -53,7 +53,7 @@ const autosize = (el: HTMLElement) => {
   el.style.height = `${el.scrollHeight + (el.offsetHeight - el.clientHeight)}px`;
 };
 const fitAll = () => {
-  for (const k of FIELD_IDS) fit(inputs[k]);
+  for (const k of FIELD_IDS) autosize(inputs[k]);
 };
 const writeFields = (f: Fields) => {
   for (const k of FIELD_IDS) inputs[k].value = f[k];
@@ -140,7 +140,7 @@ const toolbar = mountToolbar($("edToolbar"), () => editor, {
 
 for (const k of FIELD_IDS) {
   inputs[k].addEventListener("input", () => {
-    fit(inputs[k]);
+    autosize(inputs[k]);
     schedule();
   });
 }
