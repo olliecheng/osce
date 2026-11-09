@@ -5,6 +5,7 @@ export type ToolbarActions = {
   save: () => void;
   load: (file: File) => void;
   paste: () => void;
+  pdf: () => void;
   llm: () => void;
 };
 
@@ -30,6 +31,7 @@ export function mountToolbar(root: HTMLElement, getEditor: () => Editor, a: Tool
       <button class="btn ed-fmt" id="tbBold" type="button" aria-label="Bold" aria-pressed="false"><b>B</b></button>
       <button class="btn ed-fmt" id="tbItalic" type="button" aria-label="Italic" aria-pressed="false"><i>I</i></button>
       <span class="ed-spacer"></span>
+      ${btn("tbPdf", "Save as PDF", "btn quiet")}
       ${btn("tbLlm", "Use LLM", "btn quiet")}
     </div>`;
   const $ = <T extends HTMLElement>(id: string) => root.querySelector<T>(`#${id}`) as T;
@@ -60,6 +62,7 @@ export function mountToolbar(root: HTMLElement, getEditor: () => Editor, a: Tool
     file.value = "";
     if (f) a.load(f);
   });
+  $("tbPdf").addEventListener("click", a.pdf);
   $("tbLlm").addEventListener("click", a.llm);
   $<HTMLSelectElement>("tbStyle").addEventListener("change", (e) => {
     const v = (e.target as HTMLSelectElement).value;

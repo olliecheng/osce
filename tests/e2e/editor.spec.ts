@@ -73,6 +73,37 @@ test("editor: Save downloads the case; Load reads a file", async ({ page }) => {
   await expect(page.locator("#edNotice")).toContainText("1 sub-heading");
 });
 
+test("editor: Save as PDF sits left of Use LLM and prints the case in the station's print layout", async ({
+  page,
+}) => {
+  await page.goto("/editor");
+  const order = await page.locator(".ed-bar .btn").allTextContents();
+  expect(order.indexOf("Save as PDF")).toBe(order.indexOf("Use LLM") - 1);
+  await page.locator("#tbLoad").click();
+  await page.locator("#tbLoadClip").click();
+  await page
+    .locator("#pasteText")
+    .fill(
+      '---\ntitle: Print me\nintro: "Intro here"\nquestion: "Q here?"\nanswer: |\n  Model answer\n---\n\n## Sec\n- **bold** fact\n',
+    );
+  await page.locator("#pasteLoad").click();
+  await page.evaluate(() => {
+    window.print = () => {
+      const r = document.getElementById("printRoot");
+      (window as unknown as { __print: string }).__print = r ? r.innerHTML : "";
+    };
+  });
+  await page.locator("#tbPdf").click();
+  const html = await page.evaluate(() => (window as unknown as { __print: string }).__print);
+  expect(html).toContain("<h1>Print me</h1>");
+  expect(html).toContain("Q here?");
+  expect(html).toContain("Model answer");
+  expect(html).toContain("Intro here");
+  expect(html).toContain("<h2>Sec</h2>");
+  expect(html).toContain("<strong>bold</strong>");
+  expect(html).not.toContain("Assessor feedback");
+});
+
 test("editor: Load menu offers file and clipboard; clipboard opens a paste modal that loads Markdown", async ({
   page,
 }) => {
@@ -154,11 +185,21 @@ test("editor: agent panel builds the prompt from a description, launches chat ap
   await expect(page.locator("#llmPrompt")).toBeVisible();
   await expect(page.locator("#llmPrompt")).toContainText("Case: [presenting complaint");
 
+  // actions stay greyed out until something is typed
+  await expect(page.locator("#llmCopy")).toBeDisabled();
+  for (const a of await page.locator("[data-launch]").all())
+    await expect(a).toHaveAttribute("aria-disabled", "");
+  await expect(page.locator("[data-launch]").first()).not.toHaveAttribute("href", /.+/);
+  await page.locator("#llmDesc").fill("   ");
+  await expect(page.locator("#llmCopy")).toBeDisabled();
+
   await page.locator("#llmDesc").fill("Painful red eye, GP, 30F, acute angle closure $& test");
   await expect(page.locator("#llmPrompt")).toContainText(
     "Case: Painful red eye, GP, 30F, acute angle closure $& test",
   );
   await expect(page.locator("#llmPrompt")).not.toContainText("Case: [presenting complaint");
+  await expect(page.locator("#llmCopy")).toBeEnabled();
+  await expect(page.locator("[data-launch]").first()).not.toHaveAttribute("aria-disabled", /.*/);
   await page.locator("#llmCopy").click();
   await expect(page.locator("#llmCopy")).toHaveText("Copied");
   const clip = await page.evaluate(() => navigator.clipboard.readText());

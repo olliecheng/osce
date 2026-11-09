@@ -38,15 +38,15 @@ export function mountLlm(root: HTMLElement, openPaste: () => void, onOpenChange:
     <ol class="llm-steps">
       <li class="llm-step">
         <h3><span class="llm-num" aria-hidden="true">1</span>Describe the case</h3>
-        <label for="llmDesc">Presenting complaint, setting, patient age/sex, intended diagnosis, difficulty. The prompt below updates as you type.</label>
+        <label for="llmDesc">You should include the presenting complaint, setting, patient age and sex, intended diagnosis, and difficulty.</label>
         <textarea id="llmDesc" rows="3" spellcheck="true" placeholder="e.g. Chest pain, ED, 62-year-old man, NSTEMI, moderate difficulty"></textarea>
       </li>
       <li class="llm-step">
         <h3><span class="llm-num" aria-hidden="true">2</span>Ask agent</h3>
-        <p>Copy the prompt, or open an agent with it filled in. Opening one also copies the prompt, in case the site ignores the link.</p>
+        <p>Copy the prompt and paste it into your LLM of choice.</p>
         <div class="llm-actions">
-          <button class="btn primary" id="llmCopy" type="button">Copy prompt</button>
-          ${LAUNCHERS.map((l) => `<a class="btn" data-launch="${l.name}" href="#" target="_blank" rel="noopener noreferrer">${l.name} <span aria-hidden="true">→</span></a>`).join("")}
+          <button class="btn primary" id="llmCopy" type="button" disabled>Copy prompt</button>
+          ${LAUNCHERS.map((l) => `<a class="btn" data-launch="${l.name}" target="_blank" rel="noopener noreferrer">${l.name} <span aria-hidden="true">→</span></a>`).join("")}
         </div>
         <details class="llm-details" id="llmDetails">
           <summary>Show prompt</summary>
@@ -63,11 +63,21 @@ export function mountLlm(root: HTMLElement, openPaste: () => void, onOpenChange:
   const desc = $("llmDesc") as HTMLTextAreaElement;
   let prompt = PROMPT;
   const links = [...root.querySelectorAll<HTMLAnchorElement>("[data-launch]")];
+  const copyBtn = $("llmCopy") as HTMLButtonElement;
   const refresh = () => {
+    const ready = desc.value.trim() !== "";
+    copyBtn.disabled = !ready;
+    for (const a of links) {
+      a.toggleAttribute("aria-disabled", !ready);
+      a.tabIndex = ready ? 0 : -1;
+    }
     prompt = buildPrompt(desc.value);
     $("llmPrompt").textContent = prompt;
     const q = encodeURIComponent(prompt);
-    for (const a of links) a.href = LAUNCHERS.find((l) => l.name === a.dataset.launch)?.url(q) ?? "#";
+    for (const a of links) {
+      if (ready) a.href = LAUNCHERS.find((l) => l.name === a.dataset.launch)?.url(q) ?? "#";
+      else a.removeAttribute("href");
+    }
   };
   desc.addEventListener("input", refresh);
   refresh();
@@ -81,7 +91,12 @@ export function mountLlm(root: HTMLElement, openPaste: () => void, onOpenChange:
       b.textContent = "Copy prompt";
     }, 1400);
   });
-  for (const a of links) a.addEventListener("click", () => copyText(prompt));
+  for (const a of links) {
+    a.addEventListener("click", (e) => {
+      if (a.hasAttribute("aria-disabled")) e.preventDefault();
+      else copyText(prompt);
+    });
+  }
   function setOpen(open: boolean) {
     root.classList.toggle("hidden", !open);
     onOpenChange(open);

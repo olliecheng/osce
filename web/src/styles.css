@@ -187,8 +187,11 @@ a.btn {
 a.btn.primary {
   color: var(--on-primary);
 }
-a.btn.help-btn {
-  display: inline-flex; /* beats the later `a.btn { display: inline-block }` so the icon centres with the label */
+/* Icon + label: align on the text baseline (0.33em below the icon's centre line ~ half the cap height),
+   not by centring boxes, so it holds whatever font the browser ends up using. */
+a.btn.help-btn svg {
+  vertical-align: -0.31em;
+  margin-right: 8px;
 }
 .help-btn {
   display: inline-flex;

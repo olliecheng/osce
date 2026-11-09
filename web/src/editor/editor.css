@@ -54,3 +54,4 @@
 .llm-details { margin: 0 0 4px 34px; }
 .llm-details summary { cursor: pointer; font-size: 14px; color: var(--primary); padding: 2px 0; width: fit-content; }
 .llm-details .llm-prompt { margin: 8px 0 0; }
+.llm-actions a.btn[aria-disabled] { opacity: 0.45; pointer-events: none; cursor: not-allowed; }

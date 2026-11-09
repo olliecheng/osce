@@ -1,5 +1,5 @@
 import { Editor } from "@tiptap/core";
-import { downloadCase } from "../download";
+import { downloadCase, printCase } from "../download";
 import {
   docToCase,
   docToMarkdown,
@@ -135,6 +135,8 @@ const toolbar = mountToolbar($("edToolbar"), () => editor, {
   save: () => downloadCase(docToCase(docJSON(editor), readFields())),
   load: loadFile,
   paste: () => paste.open(),
+  // Same print view as "Save as PDF" at the end of a station, minus the assessor's marks and feedback.
+  pdf: () => printCase(docToCase(docJSON(editor), readFields()), new Set(), new Set()),
   llm: () => llm.toggle(),
 });
 
