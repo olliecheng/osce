@@ -9,8 +9,10 @@
       "!osce.html",
       "!plan.md",
       "!web/index.html",
+      "!web/editor/index.html",
       "!web/public",
-      "!web/src/styles.css"
+      "!web/src/styles.css",
+      "!web/src/editor/editor.css"
     ]
   },
   "formatter": { "indentStyle": "space", "indentWidth": 2, "lineWidth": 110 },

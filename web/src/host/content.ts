@@ -13,7 +13,7 @@ answer: |
 - Sitting forward slightly, rubbing sternum, anxious but cooperative.
 
 ## Presenting complaint
-Central chest pain for 2 hours.
+- Central chest pain for 2 hours.
 
 ## History of presenting complaint
 - Site: centre of chest, "behind the breastbone".

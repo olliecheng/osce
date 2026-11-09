@@ -43,7 +43,6 @@
         <button class="btn quiet" id="exampleBtn" type="button">Load example case</button>
         <input type="file" id="fileIn" accept=".md,.markdown,.txt,text/markdown,text/plain" class="hidden">
       </div>
-      <button class="btn help-btn" id="helpBtn" type="button"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 12h6M9 16h6"/></svg>How to write a case</button>
       <div class="paste hidden" id="pastePanel">
         <label for="pasteIn">Paste the case Markdown, including the front matter</label>
         <textarea id="pasteIn" spellcheck="false" autocomplete="off" placeholder="---&#10;intro: &quot;...&quot;&#10;question: &quot;...&quot;&#10;---&#10;&#10;## Introduction&#10;..."></textarea>
@@ -53,6 +52,13 @@
         </div>
       </div>
       <p class="status" id="status" role="status" aria-live="polite"></p>
+    </section>
+    <section class="drop" id="editorBox" aria-labelledby="editorTitle">
+      <h2 id="editorTitle">Editor</h2>
+      <p>Write or edit a case, with the case format guide. Changes appear here straight away.</p>
+      <div class="row">
+        <a class="btn primary" id="editorLink" href="/editor">Open editor</a>
+      </div>
     </section>
     </div>
   
@@ -95,38 +101,12 @@
     <main class="wrap stage" id="stage"></main>
   </div>
   
-  <!-- HELP DIALOG -->
   <div class="ready hidden" id="ready" role="dialog" aria-modal="true" aria-label="Ready to start">
     <div class="ready-inner">
       <button class="btn big ready-go" id="readyGo" type="button">Start</button>
       <button class="btn quiet ready-cancel" id="readyCancel" type="button">Cancel</button>
     </div>
   </div>
-  <dialog id="help" aria-labelledby="helpTitle">
-    <div class="dlg">
-      <header>
-        <h2 id="helpTitle">How to write a case file</h2>
-        <button class="btn primary big" type="button" data-copy="prompt">Copy agent prompt</button>
-        <button class="btn" id="helpClose" type="button">Close</button>
-      </header>
-      <div class="body">
-        <h3>Format</h3>
-        <p>A case is one Markdown file with two parts.</p>
-        <ul>
-          <li><strong>Front matter</strong> between two <code>---</code> lines at the very top. <code>intro</code> is the sentence the candidate reads at the door. <code>question</code> is the examiner’s question in the final minute. <code>title</code> and <code>answer</code> (a model answer, revealed at the end) are optional. Use <code>|</code> for multi-line values.</li>
-          <li><strong>Body</strong> split into <code>##</code> headings such as Introduction, Presenting complaint, HPC, PMHx, Medications, Allergies, FHx, SHx, Systems review, ICE and Role-player notes. Each heading becomes a section on the role-player’s screen; <code>###</code> sub-headings stay inside their section.</li>
-          <li>Write content in the patient’s voice. Put things the patient only says when asked as <code>- If asked about X: “…”</code> bullets, and things they never volunteer in bold.</li>
-        </ul>
-  
-        <h3>Template</h3>
-        <div class="codebox"><button class="btn primary" type="button" data-copy="tpl">Copy template</button><pre id="tpl"></pre></div>
-  
-        <h3>Prompt for an AI agent</h3>
-        <p>Paste this into an assistant, replacing the bracketed part, and save the reply as a <code>.md</code> file.</p>
-        <div class="codebox"><button class="btn primary" type="button" data-copy="prompt">Copy prompt</button><pre id="prompt"></pre></div>
-      </div>
-    </div>
-  </dialog>
 </div>
 
 <!-- DISPLAY (/join) -->

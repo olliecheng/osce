@@ -10,14 +10,14 @@ import {
   startStation,
 } from "./helpers";
 
-test("host page: header, room code, join box, help button, reset case", async ({ page }) => {
+test("host page: header, room code, join box, editor card, reset case", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("header .brand")).toHaveText("OSCE Simulation Platform");
   await expect(page.locator("header nav")).toHaveCount(0);
   await expect(page.locator("header #chipCode")).toHaveText(/^[A-HJ-NP-Z]{4}$/);
   await expect(page.locator("header #bellTest")).toBeVisible();
-  await expect(page.locator("header #helpBtn")).toHaveCount(0);
-  await expect(page.locator("#drop #helpBtn")).toBeVisible();
+  await expect(page.locator("#helpBtn")).toHaveCount(0);
+  await expect(page.locator("#editorBox #editorLink")).toHaveAttribute("href", "/editor");
 
   // titles share one size
   const size = (sel: string) => page.locator(sel).evaluate((el) => getComputedStyle(el).fontSize);
@@ -143,7 +143,7 @@ test("show case button during question time (and on finish) renders the sections
   await expect(page.getByRole("button", { name: "Show case", exact: true })).toBeVisible();
 });
 
-test("no-room regression: paste, file, example, ready screen, timer only, two-click end, help copy", async ({
+test("no-room regression: paste, file, example, ready screen, timer only, two-click end", async ({
   page,
   context,
 }) => {
@@ -204,23 +204,6 @@ test("no-room regression: paste, file, example, ready screen, timer only, two-cl
   for (let i = 0; i < 3; i++) await page.locator("#skipBtn").click();
   await expect(page.getByRole("button", { name: "Run timer again" })).toHaveCount(0);
   await page.locator("#resetBtn").click();
-
-  // help dialog
-  await page.getByRole("button", { name: /How to write a case/ }).click();
-  await expect(page.locator("#help")).toBeVisible();
-  const headerCopy = page.locator("#help header [data-copy=prompt]");
-  await expect(headerCopy).toHaveText("Copy agent prompt");
-  await headerCopy.click();
-  await expect(headerCopy).toHaveText("Copied");
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-    "Write a mock OSCE history-taking case",
-  );
-  const tplCopy = page.locator("[data-copy=tpl]");
-  await tplCopy.click();
-  await expect(tplCopy).toHaveText("Copied");
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("## Role-player notes");
-  await page.getByRole("button", { name: "Close" }).click();
-  await expect(page.locator("#help")).toBeHidden();
 });
 
 test("#load=<base64> preloads the case and strips the fragment", async ({ page }) => {

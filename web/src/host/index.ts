@@ -9,7 +9,7 @@ import { esc, md } from "../markdown";
 import { ring } from "../mute";
 import type { HostView } from "../snapshot";
 import { fmt, type PhaseColor, Timer } from "../timer";
-import { PROMPT, TEMPLATE } from "./content";
+import { TEMPLATE } from "./content";
 import { HostRoom } from "./room";
 
 export function mountHost(onJoin: (code: string) => void, onReplaced: (code: string) => void = () => {}) {
@@ -37,12 +37,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     resetBtn: $("resetBtn"),
     barFill: $("barFill"),
     stage: $("stage"),
-    help: $<HTMLDialogElement>("help"),
-    helpBtn: $("helpBtn"),
-    helpClose: $("helpClose"),
   };
-  $("tpl").textContent = TEMPLATE;
-  $("prompt").textContent = PROMPT;
 
   /* ---------- case state ---------- */
   let current: CaseData | null = null;
@@ -428,7 +423,7 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     reset();
   });
   document.addEventListener("keydown", (e) => {
-    if (els.run.classList.contains("hidden") || els.help.open) return;
+    if (els.run.classList.contains("hidden")) return;
     if (
       e.code === "Space" &&
       !/^(BUTTON|INPUT|TEXTAREA|SUMMARY)$/.test(document.activeElement?.tagName ?? "")
@@ -559,34 +554,14 @@ export function mountHost(onJoin: (code: string) => void, onReplaced: (code: str
     if (id === "question") wireShowCase($("showCaseBtn"), $("caseArea"));
   }
 
-  /* ---------- help dialog ---------- */
-  els.helpBtn.addEventListener("click", () => els.help.showModal());
-  els.helpClose.addEventListener("click", () => els.help.close());
-  els.help.addEventListener("click", (e) => {
-    if (e.target === els.help) els.help.close();
+  // The editor (/editor) writes the case here as it is edited; pick it up unless a station is running.
+  window.addEventListener("storage", (e) => {
+    if (e.key !== "osce-last-case" || !e.newValue || els.setup.classList.contains("hidden")) return;
+    try {
+      const saved = JSON.parse(e.newValue);
+      if (saved?.text) loadCase(saved.text, saved.sourceName || "editor");
+    } catch {}
   });
-  document.querySelectorAll<HTMLElement>("[data-copy]").forEach((b) =>
-    b.addEventListener("click", async () => {
-      const text = $(b.dataset.copy as string).textContent ?? "";
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch (_e) {
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        try {
-          document.execCommand("copy");
-        } catch {}
-        ta.remove();
-      }
-      const old = b.textContent;
-      b.textContent = "Copied";
-      setTimeout(() => {
-        b.textContent = old;
-      }, 1400);
-    }),
-  );
 
   // A refresh mid-station loses timer state; reclaim the room and go back to the lobby.
   if (!room.reclaim()) room.create();

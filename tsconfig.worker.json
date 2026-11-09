@@ -16,6 +16,7 @@
     "web/src/snapshot.ts",
     "web/src/case.ts",
     "web/src/host/content.ts",
+    "web/src/editor/model.ts",
     "worker-configuration.d.ts",
     "*.config.ts"
   ]
