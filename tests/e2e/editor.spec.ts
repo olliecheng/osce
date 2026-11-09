@@ -132,7 +132,7 @@ test("editor <-> station share state both ways, and not during a station", async
   await expect(host.locator("#planTitle")).toHaveText("Chest pain in a 62-year-old man");
 });
 
-test("editor: Use LLM panel copies the prompt and links to chat apps with it pre-filled", async ({
+test("editor: agent panel builds the prompt from a description, launches chat apps, and opens the paste modal", async ({
   page,
   context,
 }) => {
@@ -140,24 +140,61 @@ test("editor: Use LLM panel copies the prompt and links to chat apps with it pre
   await page.goto("/editor");
   await expect(page.locator("#edLlm")).toBeHidden();
   await page.locator("#tbLlm").click();
-  await expect(page.locator("#edLlm")).toBeVisible();
-  await expect(page.locator("#llmPrompt")).toContainText("Write a mock OSCE history-taking case");
+  await expect(page.locator("#llmTitle")).toHaveText("Write a case with an agent");
+  await expect(page.locator(".llm-steps h3")).toHaveText([
+    "1Describe the case",
+    "2Ask agent",
+    "3Paste output",
+  ]);
+  // the editor is hidden while the panel is open; the prompt is collapsed by default
+  await expect(page.locator("#fTitle")).toBeHidden();
+  await expect(page.locator(".ed-surface")).toBeHidden();
+  await expect(page.locator("#llmPrompt")).toBeHidden();
+  await page.getByText("Show prompt").click();
+  await expect(page.locator("#llmPrompt")).toBeVisible();
+  await expect(page.locator("#llmPrompt")).toContainText("Case: [presenting complaint");
+
+  await page.locator("#llmDesc").fill("Painful red eye, GP, 30F, acute angle closure $& test");
+  await expect(page.locator("#llmPrompt")).toContainText(
+    "Case: Painful red eye, GP, 30F, acute angle closure $& test",
+  );
+  await expect(page.locator("#llmPrompt")).not.toContainText("Case: [presenting complaint");
   await page.locator("#llmCopy").click();
   await expect(page.locator("#llmCopy")).toHaveText("Copied");
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
-    "Write a mock OSCE history-taking case",
-  );
-  const hrefs = await page
-    .locator("[data-launch]")
-    .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href));
-  expect(hrefs).toHaveLength(3);
+  const clip = await page.evaluate(() => navigator.clipboard.readText());
+  expect(clip).toContain("Case: Painful red eye");
+  expect(clip).toContain("Format rules");
+
+  const links = page.locator("[data-launch]");
+  await expect(links).toHaveText(["ChatGPT →", "Claude →", "Gemini →"]);
+  const hrefs = await links.evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href));
   for (const [i, host] of ["chatgpt.com", "claude.ai", "gemini.google.com"].entries()) {
     const u = new URL(hrefs[i]);
     expect(u.host).toBe(host);
-    expect(u.searchParams.get("q")).toContain("Write a mock OSCE history-taking case");
+    expect(u.searchParams.get("q")).toContain("Case: Painful red eye");
   }
+
+  // cancelling the paste modal keeps the panel (and the hidden editor)
+  await page.locator("#llmPaste").click();
+  await expect(page.locator("#pasteText")).toBeVisible();
+  await page.locator("#pasteCancel").click();
+  await expect(page.locator("#edLlm")).toBeVisible();
+  await expect(page.locator("#fTitle")).toBeHidden();
+
+  // a successful paste closes the panel and reveals the editor with the case
+  await page.locator("#llmPaste").click();
+  await page.locator("#pasteText").fill('---\ntitle: From agent\nintro: "Hi"\n---\n\n## A\n- one\n');
+  await page.locator("#pasteLoad").click();
+  await expect(page.locator("#edLlm")).toBeHidden();
+  await expect(page.locator("#fTitle")).toBeVisible();
+  await expect(page.locator("#fTitle")).toHaveValue("From agent");
+  await expect(page.locator(".ed-surface")).toBeVisible();
+
+  // Close also brings the editor back
   await page.goto("/editor#llm");
   await expect(page.locator("#edLlm")).toBeVisible();
+  await expect(page.locator("#fTitle")).toBeHidden();
   await page.locator("#llmClose").click();
   await expect(page.locator("#edLlm")).toBeHidden();
+  await expect(page.locator("#fTitle")).toBeVisible();
 });

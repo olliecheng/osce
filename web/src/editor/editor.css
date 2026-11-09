@@ -20,8 +20,14 @@
 .ed-llm { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 4px 14px color-mix(in srgb, var(--ink) 8%, transparent); padding: 16px; }
 .ed-llm .llm-head { display: flex; align-items: center; gap: 8px; }
 .ed-llm .llm-head h2 { flex: 1; margin: 0; }
+.llm-steps { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 18px; }
+.llm-step h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 6px; font-size: 1.1rem; }
+.llm-num { display: inline-grid; place-items: center; width: 24px; height: 24px; background: var(--primary); color: var(--on-primary); font-size: 0.85rem; font-weight: 700; }
+.llm-step p, .llm-step label { display: block; margin: 0 0 8px 34px; font-size: 14px; color: var(--muted); }
+.llm-step textarea, .llm-step .llm-actions { margin-left: 34px; }
+.llm-step textarea { width: calc(100% - 34px); box-sizing: border-box; padding: 8px 10px; font: inherit; font-size: 16px; background: var(--bg); color: var(--ink); border: 1px solid var(--line); resize: vertical; }
 .llm-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.llm-prompt { margin: 0; padding: 12px; max-height: 360px; overflow: auto; white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); font: 13px/1.5 var(--mono); }
+.llm-prompt { margin-block: 0; padding: 12px; max-height: 360px; overflow: auto; white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); font: 13px/1.5 var(--mono); }
 .ed-fields { display: grid; gap: 10px; }
 .ed-fields label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
 .ed-fields input, .ed-fields textarea { font: inherit; font-size: 16px; padding: 8px 10px; background: var(--surface); color: var(--ink); border: 2px solid var(--edge); width: 100%; box-sizing: border-box; resize: vertical; }
@@ -43,3 +49,7 @@
 .ed-dlg label { display: block; margin-bottom: 6px; font-size: 14px; color: var(--muted); }
 .ed-dlg textarea { width: 100%; box-sizing: border-box; min-height: 40vh; padding: 10px; font: 13px/1.5 var(--mono); background: var(--bg); color: var(--ink); border: 1px solid var(--line); resize: vertical; }
 .ed-dlg-actions { display: flex; gap: 8px; margin-top: 12px; }
+.ed.agent-mode .ed-fields, .ed.agent-mode .ed-surface, .ed.agent-mode .ed-notice { display: none; }
+.llm-details { margin: 0 0 4px 34px; }
+.llm-details summary { cursor: pointer; font-size: 14px; color: var(--primary); padding: 2px 0; width: fit-content; }
+.llm-details .llm-prompt { margin: 8px 0 0; }

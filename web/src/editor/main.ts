@@ -100,6 +100,7 @@ function loadText(text: string, name: string) {
   clearTimeout(timer);
   lastText = ""; // force a write so the station page picks it up
   persist();
+  llm.setOpen(false);
 }
 const loadFile = async (f: File) => loadText(await f.text(), f.name);
 
@@ -113,8 +114,13 @@ const editor = new Editor({
   onTransaction: () => toolbar.sync(),
 });
 
-const llm = mountLlm($("edLlm"));
 const paste = mountPaste((text) => loadText(text, "pasted.md"));
+// While the agent panel is open the editor is hidden; a successful load (or Close) brings it back.
+const llm = mountLlm(
+  $("edLlm"),
+  () => paste.open(),
+  (open) => root.classList.toggle("agent-mode", open),
+);
 const toolbar = mountToolbar($("edToolbar"), () => editor, {
   save: () => downloadCase(docToCase(docJSON(editor), readFields())),
   load: loadFile,
