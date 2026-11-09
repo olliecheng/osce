@@ -198,3 +198,27 @@ test("editor: agent panel builds the prompt from a description, launches chat ap
   await expect(page.locator("#edLlm")).toBeHidden();
   await expect(page.locator("#fTitle")).toBeVisible();
 });
+
+test("editor: Backspace on an empty bullet deletes it and moves to the previous line", async ({ page }) => {
+  await page.goto("/editor");
+  await body(page).locator("h1").click();
+  await page.keyboard.type("Sec");
+  await page.locator("#tbStyle").selectOption("header");
+  await page.keyboard.press("Enter");
+  await page.keyboard.type("one");
+  await page.keyboard.press("Enter");
+  await expect(body(page).locator("li")).toHaveCount(2);
+  await page.keyboard.press("Backspace");
+  await expect(body(page).locator("li")).toHaveText(["one"]);
+  await page.keyboard.type("!");
+  await expect(body(page).locator("li")).toHaveText(["one!"]);
+  // sole empty bullet under a header: removed, cursor returns to the header
+  await page.keyboard.press("Backspace");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.press("Backspace");
+  await page.keyboard.press("Backspace");
+  await expect(body(page).locator("li")).toHaveCount(0);
+  await page.keyboard.type("X");
+  await expect(body(page).locator("h1")).toHaveText("SecX");
+});
