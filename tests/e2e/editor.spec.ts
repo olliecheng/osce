@@ -73,6 +73,34 @@ test("editor: Save downloads the case; Load reads a file", async ({ page }) => {
   await expect(page.locator("#edNotice")).toContainText("1 sub-heading");
 });
 
+test("editor: Load menu offers file and clipboard; clipboard opens a paste modal that loads Markdown", async ({
+  page,
+}) => {
+  await page.goto("/editor");
+  await expect(page.locator("#tbMenu")).toBeHidden();
+  await page.locator("#tbLoad").click();
+  await expect(page.getByRole("menuitem", { name: "Load from file" })).toBeVisible();
+  await page.getByRole("menuitem", { name: "Load from clipboard" }).click();
+  await expect(page.locator("#tbMenu")).toBeHidden();
+  await expect(page.locator("#pasteLoad")).toBeDisabled();
+  const md = '---\ntitle: Pasted\nintro: "Hello"\n---\n\n## Sec\n- **bold** fact\n';
+  await page.locator("#pasteText").fill(md);
+  await page.locator("#pasteLoad").click();
+  await expect(page.locator("#pasteText")).toBeHidden();
+  await expect(page.locator("#fTitle")).toHaveValue("Pasted");
+  await expect(page.locator("#fIntro")).toHaveValue("Hello");
+  await expect(page.locator(".ed-doc h1")).toHaveText("Sec");
+  await expect(page.locator(".ed-doc li strong")).toHaveText("bold");
+  // Escape closes the menu; Cancel leaves the case alone
+  await page.locator("#tbLoad").click();
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#tbMenu")).toBeHidden();
+  await page.locator("#tbLoad").click();
+  await page.locator("#tbLoadClip").click();
+  await page.locator("#pasteCancel").click();
+  await expect(page.locator("#fTitle")).toHaveValue("Pasted");
+});
+
 test("editor <-> station share state both ways, and not during a station", async ({ context }) => {
   const host = await context.newPage();
   await host.goto("/");
@@ -104,20 +132,32 @@ test("editor <-> station share state both ways, and not during a station", async
   await expect(host.locator("#planTitle")).toHaveText("Chest pain in a 62-year-old man");
 });
 
-test("editor: how-to-write-a-case panel at /editor#help", async ({ page, context }) => {
+test("editor: Use LLM panel copies the prompt and links to chat apps with it pre-filled", async ({
+  page,
+  context,
+}) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.goto("/editor#help");
-  await expect(page.locator("#edHelp")).toBeVisible();
-  const copy = page.locator("#edHelp .help-head [data-copy=prompt]");
-  await copy.click();
-  await expect(copy).toHaveText("Copied");
+  await page.goto("/editor");
+  await expect(page.locator("#edLlm")).toBeHidden();
+  await page.locator("#tbLlm").click();
+  await expect(page.locator("#edLlm")).toBeVisible();
+  await expect(page.locator("#llmPrompt")).toContainText("Write a mock OSCE history-taking case");
+  await page.locator("#llmCopy").click();
+  await expect(page.locator("#llmCopy")).toHaveText("Copied");
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
     "Write a mock OSCE history-taking case",
   );
-  await page.locator("[data-copy=tpl]").click();
-  expect(await page.evaluate(() => navigator.clipboard.readText())).toContain("## Role-player notes");
-  await page.locator("#loadTpl").click();
-  await expect(page.locator("#edHelp")).toBeHidden();
-  await expect(page.locator("#fTitle")).toHaveValue("Chest pain in a 62-year-old man");
-  await expect(page.locator("#edNotice")).toBeHidden();
+  const hrefs = await page
+    .locator("[data-launch]")
+    .evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href));
+  expect(hrefs).toHaveLength(3);
+  for (const [i, host] of ["chatgpt.com", "claude.ai", "gemini.google.com"].entries()) {
+    const u = new URL(hrefs[i]);
+    expect(u.host).toBe(host);
+    expect(u.searchParams.get("q")).toContain("Write a mock OSCE history-taking case");
+  }
+  await page.goto("/editor#llm");
+  await expect(page.locator("#edLlm")).toBeVisible();
+  await page.locator("#llmClose").click();
+  await expect(page.locator("#edLlm")).toBeHidden();
 });

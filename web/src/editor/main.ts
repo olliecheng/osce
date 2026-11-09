@@ -11,7 +11,8 @@ import {
 } from "./model";
 import "../styles.css";
 import "./editor.css";
-import { mountHelp } from "./help";
+import { mountLlm } from "./llm";
+import { mountPaste } from "./paste";
 import { docJSON, extensions } from "./schema";
 import { mountToolbar } from "./toolbar";
 
@@ -23,7 +24,7 @@ const root = document.getElementById("editorRoot") as HTMLElement;
 root.innerHTML = `
   <div id="edToolbar"></div>
   <p class="ed-notice hidden" id="edNotice" role="status"><span id="edNoticeText"></span><button class="btn quiet" id="edNoticeClose" type="button">Dismiss</button></p>
-  <section class="ed-help hidden" id="edHelp" aria-labelledby="helpTitle"></section>
+  <section class="ed-llm hidden" id="edLlm" aria-labelledby="llmTitle"></section>
   <section class="ed-fields" aria-label="Case details">
     <label>Title<input id="fTitle" autocomplete="off" spellcheck="false"></label>
     <label>Intro (read by the candidate at the door)<textarea id="fIntro" rows="2"></textarea></label>
@@ -94,13 +95,13 @@ function show(text: string, sourceName: string) {
   toolbar.sync();
 }
 
-async function loadFile(f: File) {
-  const text = await f.text();
-  show(text, f.name);
+function loadText(text: string, name: string) {
+  show(text, name);
   clearTimeout(timer);
   lastText = ""; // force a write so the station page picks it up
   persist();
 }
+const loadFile = async (f: File) => loadText(await f.text(), f.name);
 
 const editor = new Editor({
   element: $("edSurface"),
@@ -112,17 +113,13 @@ const editor = new Editor({
   onTransaction: () => toolbar.sync(),
 });
 
-const help = mountHelp($("edHelp"), (tpl) => {
-  show(tpl, "template.md");
-  help.setOpen(false);
-  lastText = "";
-  persist();
-  window.scrollTo({ top: 0 });
-});
+const llm = mountLlm($("edLlm"));
+const paste = mountPaste((text) => loadText(text, "pasted.md"));
 const toolbar = mountToolbar($("edToolbar"), () => editor, {
   save: () => downloadCase(docToCase(docJSON(editor), readFields())),
   load: loadFile,
-  help: () => help.toggle(),
+  paste: () => paste.open(),
+  llm: () => llm.toggle(),
 });
 
 for (const k of FIELD_IDS) inputs[k].addEventListener("input", schedule);
@@ -162,7 +159,7 @@ try {
   }
 } catch {}
 const openFromHash = () => {
-  if (location.hash === "#help") help.setOpen(true);
+  if (location.hash === "#llm") llm.setOpen(true);
 };
 window.addEventListener("hashchange", openFromHash);
 openFromHash();

@@ -43,6 +43,7 @@
         <button class="btn quiet" id="exampleBtn" type="button">Load example case</button>
         <input type="file" id="fileIn" accept=".md,.markdown,.txt,text/markdown,text/plain" class="hidden">
       </div>
+      <a class="btn help-btn" id="editorLink" href="/editor"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/></svg>Open editor</a>
       <div class="paste hidden" id="pastePanel">
         <label for="pasteIn">Paste the case Markdown, including the front matter</label>
         <textarea id="pasteIn" spellcheck="false" autocomplete="off" placeholder="---&#10;intro: &quot;...&quot;&#10;question: &quot;...&quot;&#10;---&#10;&#10;## Introduction&#10;..."></textarea>
@@ -52,13 +53,6 @@
         </div>
       </div>
       <p class="status" id="status" role="status" aria-live="polite"></p>
-    </section>
-    <section class="drop" id="editorBox" aria-labelledby="editorTitle">
-      <h2 id="editorTitle">Editor</h2>
-      <p>Write or edit a case, with the case format guide. Changes appear here straight away.</p>
-      <div class="row">
-        <a class="btn primary" id="editorLink" href="/editor">Open editor</a>
-      </div>
     </section>
     </div>
   

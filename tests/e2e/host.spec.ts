@@ -17,7 +17,7 @@ test("host page: header, room code, join box, editor card, reset case", async ({
   await expect(page.locator("header #chipCode")).toHaveText(/^[A-HJ-NP-Z]{4}$/);
   await expect(page.locator("header #bellTest")).toBeVisible();
   await expect(page.locator("#helpBtn")).toHaveCount(0);
-  await expect(page.locator("#editorBox #editorLink")).toHaveAttribute("href", "/editor");
+  await expect(page.locator("#drop #editorLink")).toHaveAttribute("href", "/editor");
 
   // titles share one size
   const size = (sel: string) => page.locator(sel).evaluate((el) => getComputedStyle(el).fontSize);

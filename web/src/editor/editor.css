@@ -1,15 +1,27 @@
 .ed { display: grid; gap: 14px; padding-block: 18px 60px; max-width: 860px; }
-.ed-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; background: var(--surface); border: 2px solid var(--edge); position: sticky; top: 0; z-index: 5; }
-.ed-sep { width: 2px; align-self: stretch; background: var(--line); margin-inline: 4px; }
+.ed-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 6px 8px; background: color-mix(in srgb, var(--surface) 98%, transparent); backdrop-filter: blur(8px); border: 1px solid var(--line); box-shadow: 0 4px 14px color-mix(in srgb, var(--ink) 10%, transparent); }
+#edToolbar { position: sticky; top: 8px; z-index: 10; }
+.ed-bar .btn { border-color: transparent; background: transparent; }
+.ed-bar .btn:hover { background: var(--bg); }
+.ed-bar .btn.primary { background: var(--primary); color: var(--on-primary); }
+.ed-bar .btn.primary:hover { background: var(--primary); filter: brightness(1.12); }
+.ed-sep { width: 1px; align-self: stretch; background: var(--line); margin-inline: 6px; }
 .ed-spacer { flex: 1; }
 .ed-style { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--muted); }
-.ed-style select { font: inherit; padding: 8px 10px; background: var(--surface); color: var(--ink); border: 2px solid var(--edge); }
+.ed-select { position: relative; display: inline-block; }
+/* Drop the native control chrome (Safari draws its own rounded frame); the open menu stays native. */
+.ed-style select { -webkit-appearance: none; appearance: none; font: inherit; line-height: 1.4; margin: 0; padding: 0 30px 0 10px; height: 40px; box-sizing: border-box; min-width: 104px; background-color: var(--bg); color: var(--ink); border: 1px solid transparent; border-radius: 0; box-shadow: none; cursor: pointer; }
+.ed-style select:hover { border-color: var(--line); }
+.ed-style select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
+.ed-select::after { content: ""; position: absolute; right: 12px; top: 50%; width: 6px; height: 6px; margin-top: -5px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); pointer-events: none; }
 .ed-fmt { min-width: 42px; }
-.ed-fmt.on { background: var(--primary); color: var(--on-primary); }
+.ed-bar .ed-fmt.on { background: var(--primary); color: var(--on-primary); }
 .ed-notice { margin: 0; padding: 10px 12px; background: var(--amber-soft); color: var(--ink); border: 2px solid var(--amber); display: flex; gap: 12px; align-items: center; justify-content: space-between; }
-.ed-help { background: var(--surface); border: 2px solid var(--edge); padding: 16px; }
-.ed-help .help-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.ed-help .help-head h2 { flex: 1; margin: 0; }
+.ed-llm { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 4px 14px color-mix(in srgb, var(--ink) 8%, transparent); padding: 16px; }
+.ed-llm .llm-head { display: flex; align-items: center; gap: 8px; }
+.ed-llm .llm-head h2 { flex: 1; margin: 0; }
+.llm-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.llm-prompt { margin: 0; padding: 12px; max-height: 360px; overflow: auto; white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); font: 13px/1.5 var(--mono); }
 .ed-fields { display: grid; gap: 10px; }
 .ed-fields label { display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
 .ed-fields input, .ed-fields textarea { font: inherit; font-size: 16px; padding: 8px 10px; background: var(--surface); color: var(--ink); border: 2px solid var(--edge); width: 100%; box-sizing: border-box; resize: vertical; }
@@ -21,3 +33,13 @@
 .ed-doc li { margin: 3px 0; }
 .ed-doc li > p { margin: 0; }
 @media (max-width: 600px) { .ed-bar { gap: 6px; } .ed-spacer { display: none; } }
+.ed-menu-wrap { position: relative; display: inline-block; }
+.ed-menu { position: absolute; top: calc(100% + 4px); left: 0; z-index: 20; display: grid; min-width: 180px; padding: 3px; background: var(--surface); border: 1px solid var(--line); box-shadow: 0 6px 18px color-mix(in srgb, var(--ink) 16%, transparent); }
+.ed-bar .ed-menu .btn { min-height: 0; border: 0; padding: 2px 10px; font-size: 14px; font-weight: 500; line-height: 1.5; justify-content: flex-start; text-align: left; }
+.ed-bar .ed-menu .btn:hover, .ed-bar .ed-menu .btn:focus-visible { background: var(--primary); color: var(--on-primary); }
+.ed-dlg { width: min(680px, calc(100vw - 32px)); padding: 20px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); box-shadow: 0 16px 48px color-mix(in srgb, var(--ink) 30%, transparent); }
+.ed-dlg::backdrop { background: color-mix(in srgb, var(--ink) 45%, transparent); }
+.ed-dlg h2 { margin: 0 0 12px; }
+.ed-dlg label { display: block; margin-bottom: 6px; font-size: 14px; color: var(--muted); }
+.ed-dlg textarea { width: 100%; box-sizing: border-box; min-height: 40vh; padding: 10px; font: 13px/1.5 var(--mono); background: var(--bg); color: var(--ink); border: 1px solid var(--line); resize: vertical; }
+.ed-dlg-actions { display: flex; gap: 8px; margin-top: 12px; }
