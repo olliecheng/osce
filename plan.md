@@ -248,7 +248,7 @@ Two actions:
 - `parseFrontMatter` and `splitSections`: port the example case from the HTML as a fixture.
 
 **E2E (Playwright, `page.clock`):**
-- **Host alone**: full station with a fake clock. Bell oscillator starts at 60 s (double), 420 s (single warning) and 480 s (double). Record them by wrapping `AudioContext` with `addInitScript`, as in the reference test approach.
+- **Host alone**: full station with a fake clock. Bell oscillator starts at 60 s (double), 360 s (single warning) and 420 s (double). Record them by wrapping `AudioContext` with `addInitScript`, as in the reference test approach.
 - **Host + display in two pages**:
   - join in lobby
   - start
@@ -266,7 +266,7 @@ Two actions:
 ## 9. Existing behaviour to preserve (regression checklist)
 
 **Phases and bells**
-- Phases: reading 1:00, then history 7:00, then question 1:00.
+- Phases: reading 1:00, then history 6:00, then question 1:00.
 - Single bell at 1:00 remaining in history.
 - Double bell at the natural end of every phase.
 - No bell on skip.

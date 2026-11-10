@@ -8,7 +8,7 @@ import { isMuted, setMuted } from "./mute";
 const muteBtn = document.getElementById("bellMute");
 const testBtn = document.getElementById("bellTest");
 // During a station the button reads "Ring bell": it rings once (silent while muted) and always flashes
-// the clock like the 6-minute warning. Phase-end bells never flash. Outside a station it is "Test bell",
+// the clock like the 5-minute warning. Phase-end bells never flash. Outside a station it is "Test bell",
 // which is inert while muted.
 const inStation = () => document.body.classList.contains("in-station");
 testBtn?.addEventListener("click", () => {

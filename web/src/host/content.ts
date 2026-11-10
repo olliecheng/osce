@@ -89,5 +89,5 @@ Format rules (the file is parsed by a timer app, so follow them exactly):
 6. "Medications" includes doses. "SHx" covers living situation, function, smoking (pack-years), alcohol (standard drinks), drugs, occupation, and anything case-relevant.
 7. "ICE" gives the patient's ideas, concerns and expectations.
 8. "Role-player notes" gives cues, emotional reactions, and a question the patient asks if the candidate doesn't address something.
-9. The history must be completable in 7 minutes by a competent student: one coherent diagnosis with 2-3 plausible differentials, realistic for an Australian hospital or general practice setting (Australian drug names and units).
+9. The history must be completable in 6 minutes by a competent student: one coherent diagnosis with 2-3 plausible differentials, realistic for an Australian hospital or general practice setting (Australian drug names and units).
 10. Do not include headings or text outside this structure. Use - for bullets.`;

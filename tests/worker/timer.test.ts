@@ -17,12 +17,12 @@ function setup() {
 }
 
 describe("Timer", () => {
-  it("runs reading 1:00, history 7:00, question 1:00 with warn at 1:00 left and end events", () => {
-    expect(PHASES.map((p) => p.secs)).toEqual([60, 420, 60]);
+  it("runs reading 1:00, history 6:00, question 1:00 with warn at 1:00 left and end events", () => {
+    expect(PHASES.map((p) => p.secs)).toEqual([60, 360, 60]);
     const { timer, log, advance } = setup();
     timer.start();
     advance(60_000);
-    advance(360_000); // 60 s left in history
+    advance(300_000); // 60 s left in history
     expect(log).toEqual(["phase:reading", "end:reading", "phase:history", "warn:history"]);
     advance(60_000);
     advance(60_000);

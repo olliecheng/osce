@@ -172,13 +172,13 @@ test("display rings the 1:00 warning once in history, and a double at the end", 
   await clearBells(h.page);
   await clearBells(d.page);
 
-  await runBoth([h.page, d.page], 362_000); // past the 1:00-remaining warning (360 s in)
+  await runBoth([h.page, d.page], 302_000); // past the 1:00-remaining warning (300 s in)
   const hostBells = await bells(h.page, t0h);
   const dispBells = await bells(d.page, t0d);
   expect(hostBells.map((b) => b.strikes)).toEqual([1]);
   expect(dispBells.map((b) => b.strikes)).toEqual([1]);
   expect(Math.abs(dispBells[0].at - hostBells[0].at)).toBeLessThan(2500);
-  await runBoth([h.page, d.page], 60_000); // natural end of history (420 s)
+  await runBoth([h.page, d.page], 60_000); // natural end of history (360 s)
   expect((await bells(h.page, t0h)).map((b) => b.strikes)).toEqual([1, 2]);
   expect((await bells(d.page, t0d)).map((b) => b.strikes)).toEqual([1, 2]);
   await h.ctx.close();

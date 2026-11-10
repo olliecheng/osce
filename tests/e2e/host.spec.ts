@@ -45,7 +45,7 @@ test("host page: header, room code, join box, editor card, reset case", async ({
   await expect(page.locator("header #chipCode")).toHaveText(/^[A-HJ-NP-Z]{4}$/);
 });
 
-test("host alone: full station on a fake clock rings at 60 s (x2), 420 s (x1), 480 s (x2), 540 s (x2)", async ({
+test("host alone: full station on a fake clock rings at 60 s (x2), 360 s (x1), 420 s (x2), 480 s (x2)", async ({
   browser,
 }) => {
   const { ctx, page } = await newPage(browser, { clock: true });
@@ -63,23 +63,23 @@ test("host alone: full station on a fake clock rings at 60 s (x2), 420 s (x1), 4
   await expect(page.locator("#time")).toHaveText("0:01");
   await page.clock.runFor(1_300);
   await expect(page.locator("#phaseName")).toHaveText("History taking");
-  await expect(page.locator("#time")).toHaveText("7:00");
+  await expect(page.locator("#time")).toHaveText("6:00");
   await expect(page.locator(".case")).toBeVisible();
   await expect(page.locator("#stage")).not.toContainText(EXAMPLE_QUESTION);
 
-  await page.clock.runFor(361_000); // 422 s in: past the 420 s warning
-  await page.clock.runFor(60_000); // 482 s: past the 480 s end of history
+  await page.clock.runFor(301_000); // 362 s in: past the 360 s warning
+  await page.clock.runFor(60_000); // 422 s: past the 420 s end of history
   await expect(page.locator("#phaseName")).toHaveText("Examiner question");
   await expect(page.locator("#stage")).toContainText(EXAMPLE_QUESTION);
-  await page.clock.runFor(60_000); // 542 s
+  await page.clock.runFor(60_000); // 482 s
   await expect(page.locator("#phaseName")).toHaveText("Station finished");
 
   const got = await bells(page, t0);
   const expected: [number, number][] = [
     [60_000, 2],
-    [420_000, 1],
+    [360_000, 1],
+    [420_000, 2],
     [480_000, 2],
-    [540_000, 2],
   ];
   expect(got).toHaveLength(expected.length);
   expected.forEach(([at, strikes], i) => {

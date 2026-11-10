@@ -18,7 +18,7 @@ export const PHASES: readonly PhaseDef[] = [
   {
     id: "history",
     name: "History taking",
-    secs: 420,
+    secs: 360,
     color: "teal",
     next: "Next: examiner question",
     warn: 60,

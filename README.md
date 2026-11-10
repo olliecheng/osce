@@ -1,6 +1,6 @@
 # OSCE history station
 
-A timed mock-OSCE history station (reading 1:00, history 7:00, examiner question 1:00) with an optional second screen for the candidate. Runs as one Cloudflare Worker serving static assets plus a `Room` Durable Object that relays host snapshots to displays over WebSocket.
+A timed mock-OSCE history station (reading 1:00, history 6:00, examiner question 1:00) with an optional second screen for the candidate. Runs as one Cloudflare Worker serving static assets plus a `Room` Durable Object that relays host snapshots to displays over WebSocket.
 
 - One page at `/`. It is the role-player view (the station); a room is created automatically and its code is shown top right. The "Join a room" box swaps it for the candidate display, and Leave swaps it back.
 - The host is authoritative. Displays are read-only and never receive the question, answer or case sections.
